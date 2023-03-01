@@ -34,7 +34,10 @@ u_g(boundary_points) = eval(Dati.exact_sol); % Compute the lifting operator ug
 x_g = sparse(ndof,1);
 A_0 = A;
 
+
+
 b_0 = b-A*u_g; % modify the load vector --> F(v) = F(v) - a(ug,v)
+
 
 
 % Reduce the system A in order to solve the pb with 

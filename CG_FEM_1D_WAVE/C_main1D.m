@@ -74,14 +74,17 @@ Dati.t = 0;
 [b_nbc] = C_rhs1D(Dati,femregion);
 t = 0;
 
+F_1 = b_nbc
+
 if(strcmp(Dati.bc,'N'))
     b_nbc(1)   = b_nbc(1)   + eval(Dati.neumann1);
     b_nbc(end) = b_nbc(end) + eval(Dati.neumann2);
 elseif(strcmp(Dati.bc,'R'))
     b_nbc(1)   = b_nbc(1)   - Dati.c2*eval(Dati.neumann1);
     b_nbc(end) = b_nbc(end) + Dati.c2*eval(Dati.neumann2);
-elseif(strcmp(Dati.bc,'M'))
 
+% elseif(strcmp(Dati.bc,'M'))
+%     b_nbc(1)   = b_nbc(1)   - M_nbc(1,1)*eval(Dati.Lifting1tt) - A_nbc(1,1)*eval(Dati.Lifting1);
 end
 
 %==========================================================================
@@ -93,103 +96,187 @@ v0 = eval(Dati.v0);
 
 
 u_snp = u0;
-
-%% First step of leapfrog ...
-% 1) Compute the rhs
-
-b_nbc = 0.5*Dati.dt^2 * (b_nbc - A_nbc*u0) + M_nbc*u0 + Dati.dt*M_nbc*v0;
-
-
-if(strcmp(Dati.bc,'D'))
-    [M,b,u_g] = C_bound_cond1D(M_nbc,b_nbc,femregion,Dati);
-    u1 =  M\b;
-    u1 = u1 + u_g;
-elseif(strcmp(Dati.bc,'N') || strcmp(Dati.bc,'R'))
-    u1 =  M_nbc\b_nbc;
-elseif(strcmp(Dati.bc,'P'))
-    % 1st line
-    M_nbc(1,:) = M_nbc(1,:) + M_nbc(end,:);
-    b_nbc(1,:) = b_nbc(1,:) + b_nbc(end,:);
-    % last line
-    M_nbc(end,:) = 0;
-    M_nbc(end,1) = 1;  M_nbc(end,end) = -1;
-    b_nbc(end) = 0;
-    %solution
-    u1 =  M_nbc\b_nbc;
-elseif(strcmp(Dati.bc,'A'))
-    b_nbc(1)   = b_nbc(1)   - sqrt(Dati.c2)*v0(1)*Dati.dt;
-    b_nbc(end) = b_nbc(end) - sqrt(Dati.c2)*v0(end)*Dati.dt;
-    u1 =  M_nbc\b_nbc;
-end
-
-% 5) Plot the obtained solution --> C_snapshot_1D
-
-[u1] = C_snapshot_1D(femregion, u1, Dati);
-
-%% End of first step leapfrog
-
-fprintf('============================================================\n')
-fprintf('Starting time-loop ... \n');
-fprintf('============================================================\n')
-
-u_snp(:,2) = u1;
-k = 3;
-
-for t = Dati.dt : Dati.dt : Dati.T - Dati.dt
+if(strcmp(Dati.timeIntScheme,'NLF'))
+    %% First step of not leapfrog
+    % 1) Compute the rhs
+    Dati.t = Dati.dt;
+    [b_nbc_1] = C_rhs1D(Dati,femregion);
+    t = Dati.dt;
     
-    fprintf('time = %5.3e \n',t);
-    
-    %==========================================================================
-    % BUILD FINITE ELEMENTS RHS a time t
-    %==========================================================================
-    Dati.t = t;
-    [b_nbc] = C_rhs1D(Dati,femregion);
-    
-    if(strcmp(Dati.bc,'N'))
-        b_nbc(1)   = b_nbc(1)   + eval(Dati.neumann1);
-        b_nbc(end) = b_nbc(end) + eval(Dati.neumann2);
-    elseif(strcmp(Dati.bc,'R'))
-        b_nbc(1)   = b_nbc(1)   - Dati.c2*eval(Dati.neumann1);
-        b_nbc(end) = b_nbc(end) + Dati.c2*eval(Dati.neumann2);
+    b_nbc = 0.5*Dati.dt^2 * (b_nbc_1) + M_nbc*u0 + Dati.dt*M_nbc*v0;
+    M_nbc_nlf = M_nbc+Dati.dt^2*A_nbc;
+    if(strcmp(Dati.bc,'D'))
+        [M,b,u_g] = C_bound_cond1D(M_nbc_nlf,b_nbc,femregion,Dati);
+        u1 =  M\b;
+        u1 = u1 + u_g;
     end
+     % 5) Plot the obtained solution --> C_snapshot_1D
     
+    [u1] = C_snapshot_1D(femregion, u1, Dati);
+    %% End of first step not leapfrog
     
-    % Repeat steps 1) to 5) for the general time step
-    b_nbc = Dati.dt^2 * (b_nbc - A_nbc*u1) + 2 * M_nbc * u1 - M_nbc * u0;
+    fprintf('============================================================\n')
+    fprintf('Starting time-loop ... \n');
+    fprintf('============================================================\n')
+    
+    u_snp(:,2) = u1;
+    k = 3;
+    
+    for t = Dati.dt : Dati.dt : Dati.T - Dati.dt
+        
+        fprintf('time = %5.3e \n',t);
+        
+        %==========================================================================
+        % BUILD FINITE ELEMENTS RHS a time t
+        %==========================================================================
+        Dati.t = t;
+        [b_nbc] = C_rhs1D(Dati,femregion);
+        
+        if(strcmp(Dati.bc,'N'))
+            b_nbc(1)   = b_nbc(1)   + eval(Dati.neumann1);
+            b_nbc(end) = b_nbc(end) + eval(Dati.neumann2);
+        elseif(strcmp(Dati.bc,'R'))
+            b_nbc(1)   = b_nbc(1)   - Dati.c2*eval(Dati.neumann1);
+            b_nbc(end) = b_nbc(end) + Dati.c2*eval(Dati.neumann2);
+        end
+        
+        
+        % Repeat steps 1) to 5) for the general time step
+        b_nbc = Dati.dt^2 * (b_nbc) + 2 * M_nbc * u1 - M_nbc * u0;
+        M_nbc_nlf = M_nbc+Dati.dt^2*A_nbc;
+
+        if(strcmp(Dati.bc,'D'))
+            [M,b,u_g] = C_bound_cond1D(M_nbc_nlf,b_nbc,femregion,Dati);
+            u2 =  M\b;
+            u2 = u2 + u_g;
+        elseif(strcmp(Dati.bc,'N')|| strcmp(Dati.bc,'R'))
+            u2 =  M_nbc\b_nbc;
+        elseif(strcmp(Dati.bc,'P'))
+            b_nbc(1,:) = b_nbc(1,:) + b_nbc(end,:);
+            b_nbc(end) = 0;
+            %solution
+            u2 =  M_nbc\b_nbc;
+        elseif(strcmp(Dati.bc,'A'))
+            b_nbc(1)   = b_nbc(1)   - sqrt(Dati.c2)*(u1(1)-u0(1))*Dati.dt;
+            b_nbc(end) = b_nbc(end) - sqrt(Dati.c2)*(u1(end)-u0(end))*Dati.dt;
+            u2 =  M_nbc\b_nbc;
+            
+        end
+        
+        [u2] = C_snapshot_1D(femregion, u2, Dati);
+        
+        u_snp(:,k) = u2;
+        k = k +1;
+        
+        % Put a pause between one step and the other to see the plot
+        pause(0.015);
+        
+        % Update the solution
+        u0 = u1;
+        u1 = u2;
+        
+        
+    end
+
+
+
+elseif(strcmp(Dati.timeIntScheme,'LF'))
+    %% First step of leapfrog ...
+    % 1) Compute the rhs
+    
+    b_nbc = 0.5*Dati.dt^2 * (b_nbc - A_nbc*u0) + M_nbc*u0 + Dati.dt*M_nbc*v0;
+    
     
     if(strcmp(Dati.bc,'D'))
         [M,b,u_g] = C_bound_cond1D(M_nbc,b_nbc,femregion,Dati);
-        u2 =  M\b;
-        u2 = u2 + u_g;
-    elseif(strcmp(Dati.bc,'N')|| strcmp(Dati.bc,'R'))
-        u2 =  M_nbc\b_nbc;
+        u1 =  M\b;
+        u1 = u1 + u_g;
+    elseif(strcmp(Dati.bc,'N') || strcmp(Dati.bc,'R'))
+        u1 =  M_nbc\b_nbc;
     elseif(strcmp(Dati.bc,'P'))
+        % 1st line
+        M_nbc(1,:) = M_nbc(1,:) + M_nbc(end,:);
         b_nbc(1,:) = b_nbc(1,:) + b_nbc(end,:);
+        % last line
+        M_nbc(end,:) = 0;
+        M_nbc(end,1) = 1;  M_nbc(end,end) = -1;
         b_nbc(end) = 0;
         %solution
-        u2 =  M_nbc\b_nbc;
+        u1 =  M_nbc\b_nbc;
     elseif(strcmp(Dati.bc,'A'))
-        b_nbc(1)   = b_nbc(1)   - sqrt(Dati.c2)*(u1(1)-u0(1))*Dati.dt;
-        b_nbc(end) = b_nbc(end) - sqrt(Dati.c2)*(u1(end)-u0(end))*Dati.dt;
-        u2 =  M_nbc\b_nbc;
-        
+        b_nbc(1)   = b_nbc(1)   - sqrt(Dati.c2)*v0(1)*Dati.dt;
+        b_nbc(end) = b_nbc(end) - sqrt(Dati.c2)*v0(end)*Dati.dt;
+        u1 =  M_nbc\b_nbc;
     end
     
-    [u2] = C_snapshot_1D(femregion, u2, Dati);
+    % 5) Plot the obtained solution --> C_snapshot_1D
     
-    u_snp(:,k) = u2;
-    k = k +1;
+    [u1] = C_snapshot_1D(femregion, u1, Dati);
     
-    % Put a pause between one step and the other to see the plot
-    pause(0.015);
+    %% End of first step leapfrog
     
-    % Update the solution
-    u0 = u1;
-    u1 = u2;
+    fprintf('============================================================\n')
+    fprintf('Starting time-loop ... \n');
+    fprintf('============================================================\n')
     
+    u_snp(:,2) = u1;
+    k = 3;
     
+    for t = Dati.dt : Dati.dt : Dati.T - Dati.dt
+        
+        fprintf('time = %5.3e \n',t);
+        
+        %==========================================================================
+        % BUILD FINITE ELEMENTS RHS a time t
+        %==========================================================================
+        Dati.t = t;
+        [b_nbc] = C_rhs1D(Dati,femregion);
+        
+        if(strcmp(Dati.bc,'N'))
+            b_nbc(1)   = b_nbc(1)   + eval(Dati.neumann1);
+            b_nbc(end) = b_nbc(end) + eval(Dati.neumann2);
+        elseif(strcmp(Dati.bc,'R'))
+            b_nbc(1)   = b_nbc(1)   - Dati.c2*eval(Dati.neumann1);
+            b_nbc(end) = b_nbc(end) + Dati.c2*eval(Dati.neumann2);
+        end
+        
+        
+        % Repeat steps 1) to 5) for the general time step
+        b_nbc = Dati.dt^2 * (b_nbc - A_nbc*u1) + 2 * M_nbc * u1 - M_nbc * u0;
+        
+        if(strcmp(Dati.bc,'D'))
+            [M,b,u_g] = C_bound_cond1D(M_nbc,b_nbc,femregion,Dati);
+            u2 =  M\b;
+            u2 = u2 + u_g;
+        elseif(strcmp(Dati.bc,'N')|| strcmp(Dati.bc,'R'))
+            u2 =  M_nbc\b_nbc;
+        elseif(strcmp(Dati.bc,'P'))
+            b_nbc(1,:) = b_nbc(1,:) + b_nbc(end,:);
+            b_nbc(end) = 0;
+            %solution
+            u2 =  M_nbc\b_nbc;
+        elseif(strcmp(Dati.bc,'A'))
+            b_nbc(1)   = b_nbc(1)   - sqrt(Dati.c2)*(u1(1)-u0(1))*Dati.dt;
+            b_nbc(end) = b_nbc(end) - sqrt(Dati.c2)*(u1(end)-u0(end))*Dati.dt;
+            u2 =  M_nbc\b_nbc;
+            
+        end
+        
+        [u2] = C_snapshot_1D(femregion, u2, Dati);
+        
+        u_snp(:,k) = u2;
+        k = k +1;
+        
+        % Put a pause between one step and the other to see the plot
+        pause(0.015);
+        
+        % Update the solution
+        u0 = u1;
+        u1 = u2;
+        
+        
+    end
 end
-
 %==========================================================================
 % POST-PROCESSING OF THE SOLUTION
 %==========================================================================
