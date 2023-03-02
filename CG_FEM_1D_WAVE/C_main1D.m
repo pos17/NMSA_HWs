@@ -100,12 +100,17 @@ if(strcmp(Dati.timeIntScheme,'NLF'))
     %% First step of not leapfrog
     % 1) Compute the rhs
     Dati.t = Dati.dt;
-    [b_nbc_1] = C_rhs1D(Dati,femregion);
     t = Dati.dt;
+    [b_nbc_1] = C_rhs1D(Dati,femregion);
+    
     
     b_nbc = 0.5*Dati.dt^2 * (b_nbc_1) + M_nbc*u0 + Dati.dt*M_nbc*v0;
-    M_nbc_nlf = M_nbc+Dati.dt^2*A_nbc;
+    M_nbc_nlf = M_nbc+Dati.dt^2*A_nbc/2;
     if(strcmp(Dati.bc,'D'))
+        [M,b,u_g] = C_bound_cond1D(M_nbc_nlf,b_nbc,femregion,Dati);
+        u1 =  M\b;
+        u1 = u1 + u_g;
+    elseif(strcmp(Dati.bc,'M'))
         [M,b,u_g] = C_bound_cond1D(M_nbc_nlf,b_nbc,femregion,Dati);
         u1 =  M\b;
         u1 = u1 + u_g;
@@ -146,6 +151,10 @@ if(strcmp(Dati.timeIntScheme,'NLF'))
         M_nbc_nlf = M_nbc+Dati.dt^2*A_nbc;
 
         if(strcmp(Dati.bc,'D'))
+            [M,b,u_g] = C_bound_cond1D(M_nbc_nlf,b_nbc,femregion,Dati);
+            u2 =  M\b;
+            u2 = u2 + u_g;
+        elseif(strcmp(Dati.bc,'M'))
             [M,b,u_g] = C_bound_cond1D(M_nbc_nlf,b_nbc,femregion,Dati);
             u2 =  M\b;
             u2 = u2 + u_g;
