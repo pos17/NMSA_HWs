@@ -114,6 +114,10 @@ if(strcmp(Dati.timeIntScheme,'NLF'))
         [M,b,u_g] = C_bound_cond1D(M_nbc_nlf,b_nbc,femregion,Dati);
         u1 =  M\b;
         u1 = u1 + u_g;
+    elseif(strcmp(Dati.bc,'F'))
+        [M,b,u_g] = C_bound_cond1D(M_nbc_nlf,b_nbc,femregion,Dati);
+        u1 =  M\b;
+        u1 = u1 + u_g;
     end
      % 5) Plot the obtained solution --> C_snapshot_1D
     
@@ -155,6 +159,10 @@ if(strcmp(Dati.timeIntScheme,'NLF'))
             u2 =  M\b;
             u2 = u2 + u_g;
         elseif(strcmp(Dati.bc,'M'))
+            [M,b,u_g] = C_bound_cond1D(M_nbc_nlf,b_nbc,femregion,Dati);
+            u2 =  M\b;
+            u2 = u2 + u_g;
+        elseif(strcmp(Dati.bc,'F'))
             [M,b,u_g] = C_bound_cond1D(M_nbc_nlf,b_nbc,femregion,Dati);
             u2 =  M\b;
             u2 = u2 + u_g;
@@ -277,7 +285,7 @@ elseif(strcmp(Dati.timeIntScheme,'LF'))
         k = k +1;
         
         % Put a pause between one step and the other to see the plot
-        pause(0.015);
+        pause(0.00000000015);
         
         % Update the solution
         u0 = u1;

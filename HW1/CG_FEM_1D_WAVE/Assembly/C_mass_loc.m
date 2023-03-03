@@ -1,4 +1,4 @@
-function [M_loc]=C_mass_loc(dphiq,w_1D,nln,BJ)
+function [M_loc]=C_mass_loc(dphiq,w_1D,nln,BJ,shape_1D)
 %% [M_loc]=C_mass_loc(dphiq,w_1D,nln,BJ)
 %==========================================================================
 % Build the local mass matrix for the term (uv)
@@ -22,7 +22,7 @@ for i=1:nln
         for k=1:length(w_1D)
             Binv = 1./BJ;      % inverse
             Jdet = BJ;      % determinant 
-            M_loc(i,j) = M_loc(i,j) + (Jdet.*w_1D(k)) .* dphiq(1,k,i).* dphiq(1,k,j);
+            M_loc(i,j) = M_loc(i,j) + shape_1D(k) *(Jdet.*w_1D(k)) .* dphiq(1,k,i).* dphiq(1,k,j);
         end
     end
 end

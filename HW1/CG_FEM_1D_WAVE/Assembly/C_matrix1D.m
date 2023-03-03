@@ -57,8 +57,11 @@ for ie = 1 : ne
     % STIFFNESS MATRIX
     %=============================================================%
     
+    x = pphys_1D;
+    pphys_1D = eval(Dati.shape)
+    
     % Local stiffness matrix 
-    [A_loc] = C_lap_loc(Grad,w_1D,nln,BJ);
+    [A_loc] = C_lap_loc(Grad,w_1D,nln,BJ,pphys_1D);
 
     % Assembly phase for stiffness matrix
     A(iglo,iglo) = A(iglo,iglo) + Dati.c2*A_loc; 
@@ -68,7 +71,7 @@ for ie = 1 : ne
     %=============================================================%
     
     % Local mass matrix 
-    [M_loc] = C_mass_loc(dphiq,w_1D,nln,BJ);
+    [M_loc] = C_mass_loc(dphiq,w_1D,nln,BJ,pphys_1D);
 
     % Assembly phase for mass matrix
     M(iglo,iglo) = M(iglo,iglo) + M_loc;   

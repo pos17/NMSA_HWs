@@ -85,5 +85,6 @@ ylabel('H^1-error')
 xlabel('h');
 hold off
 hs.FontSize = 12;
+saveas(gcf,"Plots/ErrorPlotsT01.png")
 
  
