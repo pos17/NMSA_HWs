@@ -44,6 +44,7 @@ addpath Postprocessing
 
 Dati = C_dati(TestName);
 Dati.nRefinement = nRef;
+gamma = sqrt(Dati.c2/Dati.domani(2));
 
 %==========================================================================
 % MESH GENERATION
@@ -96,6 +97,8 @@ v0 = eval(Dati.v0);
 
 
 u_snp = u0;
+p_snp = v0/gamma;
+
 if(strcmp(Dati.timeIntScheme,'NLF'))
     %% First step of not leapfrog
     % 1) Compute the rhs
@@ -129,6 +132,7 @@ if(strcmp(Dati.timeIntScheme,'NLF'))
     fprintf('============================================================\n')
     
     u_snp(:,2) = u1;
+    p_snp(:,2) = (u_snp(:,2)-u_snp(:,1))/Dati.dt/gamma;
     k = 3;
     
     for t = Dati.dt : Dati.dt : Dati.T - Dati.dt
@@ -183,6 +187,7 @@ if(strcmp(Dati.timeIntScheme,'NLF'))
         [u2] = C_snapshot_1D(femregion, u2, Dati);
         
         u_snp(:,k) = u2;
+        p_snp(:,k) = (u_snp(:,k)-u_snp(:,k-1))/Dati.dt/gamma;
         k = k +1;
         
         % Put a pause between one step and the other to see the plot
@@ -307,6 +312,7 @@ errors = [];
 if (Dati.plot_errors)
     [errors] = C_compute_errors(Dati,femregion,solutions);
 end
+
 
 
 
