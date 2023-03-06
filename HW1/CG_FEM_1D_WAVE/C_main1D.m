@@ -308,5 +308,11 @@ if (Dati.plot_errors)
     [errors] = C_compute_errors(Dati,femregion,solutions);
 end
 
+if(strcmp(Dati.st_plot, "Y"))
+    figure
+    surf(u_snp, EdgeColor="none");
+    view(0,90)
+    title('Space time evolution')
+end 
 
 
