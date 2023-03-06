@@ -27,7 +27,9 @@ F = eval(force);
 % Evaluation of the local r.h.s.
 for s = 1:nln
     for k = 1:length(w_1D)
+        % w_1D [2x1]
         Jdet = BJ;  % determinant 
+        % valutazione della forza locale tramite metodo di quadratura
         f(s) = f(s) + w_1D(k)*Jdet*F(k)*dphiq(1,k,s);
     end    
 end

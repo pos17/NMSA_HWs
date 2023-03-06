@@ -29,6 +29,7 @@ connectivity = femregion.connectivity; % connectivity matrix
 % quadrature nodes and weights for integrals
 [nodes_1D, w_1D] = C_quadrature(Dati);
 
+
 % evaluation of shape bases 
 [dphiq,Grad] = C_evalshape(basis,nodes_1D);
 
@@ -51,7 +52,15 @@ for ie = 1 : ne
     %==============================================
 
     % Local load vector
-    [load] = C_loc_rhs1D(Dati.force,dphiq,BJ,w_1D,pphys_1D,nln,Dati.t);    
+    [load] = C_loc_rhs1D(Dati.force,dphiq,BJ,w_1D,pphys_1D,nln,Dati.t); 
+    % Dati.force:   array della forza applicata
+    % dphiq:        le due funzioni intersecanti per l'elementino considerato
+    % BJ:           jacobiano dell'elementino [1x1]
+    % w_1D:         pesi del metodo di quadratura [2x1]
+    % pphys_1D:     coordinate degli estremi in coordinate globali
+    % nln:          numero gradi di libertà locali
+    % Dati.t:       istante temporale a cui stiamo ciclando
+
 
     % Assembly phase for the load vector
     f(iglo) = f(iglo) + load;
