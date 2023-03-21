@@ -64,7 +64,7 @@ for ie = 1 : ne
     [A_loc] = C_lap_loc(Grad,w_1D,nln,BJ,pphys_1D);
 
     % Assembly phase for stiffness matrix
-    A(iglo,iglo) = A(iglo,iglo) + Dati.c2*A_loc; 
+    A(iglo,iglo) = A(iglo,iglo) + A_loc; 
 
     %=============================================================%
     % MASS MATRIX

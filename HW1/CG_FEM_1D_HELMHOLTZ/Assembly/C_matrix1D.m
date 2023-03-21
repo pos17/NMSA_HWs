@@ -1,4 +1,4 @@
-function [M,A,I]=C_matrix1D(Dati,femregion)
+function [M,A]=C_matrix1D(Dati,femregion)
 %% [M,A] = C_matrix1D(Dati,femregion)
 %==========================================================================
 % Assembly of the mass matrix M and the stiffness matrix A 
@@ -42,7 +42,7 @@ connectivity = femregion.connectivity; % connectivity matrix
 % Assembly begin ...
 M = sparse(ndof,ndof);  % Global Mass matrix
 A = sparse(ndof,ndof);  % Global Stiffness matrix
-I = sparse(ndof,ndof);  % Global Stiffness matrix
+
 for ie = 1 : ne
      
     % Local to global map --> To be used in the assembly phase
@@ -57,32 +57,21 @@ for ie = 1 : ne
     % STIFFNESS MATRIX
     %=============================================================%
     
-    x = pphys_1D;
-    pphys_1D = eval(Dati.shape)
-    
     % Local stiffness matrix 
-    [A_loc] = C_lap_loc(Grad,w_1D,nln,BJ,pphys_1D);
+    [A_loc] = C_lap_loc(Grad,w_1D,nln,BJ);
 
     % Assembly phase for stiffness matrix
-    A(iglo,iglo) = A(iglo,iglo) + Dati.c2*A_loc; 
+    A(iglo,iglo) = A(iglo,iglo) + A_loc; 
 
     %=============================================================%
     % MASS MATRIX
     %=============================================================%
     
     % Local mass matrix 
-    [M_loc] = C_mass_loc(dphiq,w_1D,nln,BJ,pphys_1D);
+    [M_loc] = C_mass_loc(dphiq,w_1D,nln,BJ);
 
     % Assembly phase for mass matrix
     M(iglo,iglo) = M(iglo,iglo) + M_loc;   
    
 
-end
-if(strcmp(Dati.bc,'LR'))
-    x = Dati.domain(1);
-    S0 = eval(Dati.shape);
-    x = Dati.domain(2);
-    S1 = eval(Dati.shape);
-    A(end,end) = A(end,end) + Dati.c2/Dati.domain(2) * S1*(Dati.domain(2)/(0.8216*sqrt(S0*S1/pi)))
-    I(end,end) = Dati.c2/Dati.domain(2) * S1*   1/(2*0.8216^2*sqrt(Dati.c2/(Dati.domain(2))))
 end

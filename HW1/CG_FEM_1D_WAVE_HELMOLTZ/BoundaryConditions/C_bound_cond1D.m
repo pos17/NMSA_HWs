@@ -112,6 +112,31 @@ elseif(strcmp(Dati.bc,'LR'))
         b_0(boundary_points(k)) = 0;
     end
 
+elseif(strcmp(Dati.bc,'P'))
+    %choosing only the first point for imposing boundary conditions
+    boundary_points = femregion.boundary_points(1);
+    x = femregion.dof(boundary_points,1);
+    t = Dati.t; 
+    u_g(boundary_points) = eval(Dati.exact_sol); % Compute the lifting operator ug
+    
+    x_g = sparse(ndof,1);
+    A_0 = A;
+    
+    
+    
+    b_0 = 0; % modify the load vector --> F(v) = F(v) - a(ug,v)
+
+
+
+% Reduce the system A in order to solve the pb with 
+% homogeneous Dirichlet conditions 
+
+    for k = 1:length(boundary_points)
+        A_0(boundary_points(k),:) = 0;
+        A_0(:,boundary_points(k)) = 0;
+        A_0(boundary_points(k),boundary_points(k)) = 1;
+        b_0(boundary_points(k)) = 0;
+    end
 else
     boundary_points = femregion.boundary_points;
     x = femregion.dof(boundary_points,1);
@@ -136,6 +161,7 @@ else
         A_0(boundary_points(k),boundary_points(k)) = 1;
         b_0(boundary_points(k)) = 0;
     end
+
 end
 
 b = b_0;
