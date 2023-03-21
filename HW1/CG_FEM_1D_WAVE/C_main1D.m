@@ -44,6 +44,7 @@ addpath Postprocessing
 
 Dati = C_dati(TestName);
 Dati.nRefinement = nRef;
+gamma = sqrt(Dati.c2/Dati.domain(2));
 
 %==========================================================================
 % MESH GENERATION
@@ -61,7 +62,7 @@ Dati.nRefinement = nRef;
 % BUILD FINITE ELEMENT MATRICES
 %==========================================================================
 
-[M_nbc,A_nbc] = C_matrix1D(Dati,femregion);
+[M_nbc,A_nbc,I_nbc] = C_matrix1D(Dati,femregion);
 if(strcmp(Dati.bc,'R'))
     A_nbc(1,1)     = A_nbc(1,1) + Dati.c2;
     A_nbc(end,end) = A_nbc(end,end) + Dati.c2;
@@ -82,7 +83,6 @@ if(strcmp(Dati.bc,'N'))
 elseif(strcmp(Dati.bc,'R'))
     b_nbc(1)   = b_nbc(1)   - Dati.c2*eval(Dati.neumann1);
     b_nbc(end) = b_nbc(end) + Dati.c2*eval(Dati.neumann2);
-
 % elseif(strcmp(Dati.bc,'M'))
 %     b_nbc(1)   = b_nbc(1)   - M_nbc(1,1)*eval(Dati.Lifting1tt) - A_nbc(1,1)*eval(Dati.Lifting1);
 end
@@ -96,18 +96,33 @@ v0 = eval(Dati.v0);
 
 
 u_snp = u0;
+p_snp = v0/gamma;
+
 if(strcmp(Dati.timeIntScheme,'NLF'))
     %% First step of not leapfrog
     % 1) Compute the rhs
     Dati.t = Dati.dt;
     t = Dati.dt;
-    [b_nbc_1] = C_rhs1D(Dati, femregion);
+    [b_nbc_1] = C_rhs1D(Dati,femregion);
     
-    b_nbc = 0.5*Dati.dt^2 * (b_nbc_1) + M_nbc*u0 + Dati.dt*M_nbc*v0;
-
-    M_nbc_nlf = M_nbc + Dati.dt^2*A_nbc/2;
-
+    
+    b_nbc = 0.5*Dati.dt^2 * (b_nbc_1-I_nbc*v0) + M_nbc*u0 + Dati.dt*M_nbc*v0;
+    M_nbc_nlf = M_nbc+Dati.dt^2*A_nbc/2;
     if(strcmp(Dati.bc,'D'))
+        [M,b,u_g] = C_bound_cond1D(M_nbc_nlf,b_nbc,femregion,Dati);
+        u1 =  M\b;
+        u1 = u1 + u_g;
+    elseif(strcmp(Dati.bc,'M'))
+        [M,b,u_g] = C_bound_cond1D(M_nbc_nlf,b_nbc,femregion,Dati);
+        u1 =  M\b;
+        u1 = u1 + u_g;
+    elseif(strcmp(Dati.bc,'LR'))
+
+        [M,b,u_g] = C_bound_cond1D(M_nbc_nlf,b_nbc,femregion,Dati);
+        u1 =  M\b;
+        u1 = u1 + u_g;
+
+    elseif(strcmp(Dati.bc,'F'))
         [M,b,u_g] = C_bound_cond1D(M_nbc_nlf,b_nbc,femregion,Dati);
         u1 =  M\b;
         u1 = u1 + u_g;
@@ -122,6 +137,7 @@ if(strcmp(Dati.timeIntScheme,'NLF'))
     fprintf('============================================================\n')
     
     u_snp(:,2) = u1;
+    p_snp(:,2) = (u_snp(:,2)-u_snp(:,1))/Dati.dt/gamma;
     k = 3;
     
     for t = Dati.dt : Dati.dt : Dati.T - Dati.dt
@@ -144,10 +160,18 @@ if(strcmp(Dati.timeIntScheme,'NLF'))
         
         
         % Repeat steps 1) to 5) for the general time step
-        b_nbc = Dati.dt^2 * (b_nbc) + 2 * M_nbc * u1 - M_nbc * u0;
+        b_nbc = Dati.dt^2 * (b_nbc-I_nbc*(u1-u0)/Dati.dt) + 2 * M_nbc * u1 - M_nbc * u0;
         M_nbc_nlf = M_nbc+Dati.dt^2*A_nbc;
 
         if(strcmp(Dati.bc,'D'))
+            [M,b,u_g] = C_bound_cond1D(M_nbc_nlf,b_nbc,femregion,Dati);
+            u2 =  M\b;
+            u2 = u2 + u_g;
+        elseif(strcmp(Dati.bc,'M'))
+            [M,b,u_g] = C_bound_cond1D(M_nbc_nlf,b_nbc,femregion,Dati);
+            u2 =  M\b;
+            u2 = u2 + u_g;
+        elseif(strcmp(Dati.bc,'F'))
             [M,b,u_g] = C_bound_cond1D(M_nbc_nlf,b_nbc,femregion,Dati);
             u2 =  M\b;
             u2 = u2 + u_g;
@@ -162,13 +186,17 @@ if(strcmp(Dati.timeIntScheme,'NLF'))
             b_nbc(1)   = b_nbc(1)   - sqrt(Dati.c2)*(u1(1)-u0(1))*Dati.dt;
             b_nbc(end) = b_nbc(end) - sqrt(Dati.c2)*(u1(end)-u0(end))*Dati.dt;
             u2 =  M_nbc\b_nbc;
-            
+        elseif(strcmp(Dati.bc,'LR'))
+            [M,b,u_g] = C_bound_cond1D(M_nbc_nlf,b_nbc,femregion,Dati);
+            u2 =  M\b;
+            u2 = u2 + u_g;
         end
         
         % plot
         [u2] = C_snapshot_1D(femregion, u2, Dati);
         
         u_snp(:,k) = u2;
+        p_snp(:,k) = (u_snp(:,k)-u_snp(:,k-1))/Dati.dt/gamma;
         k = k +1;
         
         % Put a pause between one step and the other to see the plot
@@ -293,6 +321,21 @@ errors = [];
 if (Dati.plot_errors)
     [errors] = C_compute_errors(Dati,femregion,solutions);
 end
+
+if(strcmp(Dati.st_plot, "Y"))
+    figure(10)
+    surf(u_snp, EdgeColor="none");
+    view(0,90)
+    title('Space time evolution')
+    saveas(gcf,strcat("Plots/",Dati.name,"_SpaceTimeEvolution.png"))
+
+    figure(11)
+    surf(p_snp, EdgeColor="none");
+    view(0,90)
+    title('Pressure Field evolution')
+    saveas(gcf,strcat("Plots/",Dati.name,"_PresFieldEvol.png"))
+    
+end 
 
 
 

@@ -27,15 +27,19 @@ ndof = length(b);
 u_g = sparse(ndof,1);
 
 boundary_points = femregion.boundary_points;
-% boundary_points [1,9]
-x = femregion.dof(boundary_points,1); % [0,1]
-t = Dati.t;
+x = femregion.dof(boundary_points,1);
+rho = Dati.rho;
+omega = Dati.omega;
+vel = Dati.vel;
+
+
 u_g(boundary_points) = eval(Dati.exact_sol); % Compute the lifting operator ug
 
 x_g = sparse(ndof,1);
-A_0 = A; %stiffness matrix
+A_0 = A;
 
-b_0 = b - A*u_g; % modify the load vector --> F(v) = F(v) - a(ug,v)
+b_0 = b-A*u_g; % modify the load vector --> F(v) = F(v) - a(ug,v)
+
 
 % Reduce the system A in order to solve the pb with 
 % homogeneous Dirichlet conditions 
