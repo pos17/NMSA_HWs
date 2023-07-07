@@ -9,14 +9,14 @@ function [SOL,dx,dt] = FD_1D_BURGER_FUN2_EX4(mu,T,I,NT, NX ,u0, u0_t, uj_t)
     
     SOL = zeros(NX+3,NT+1);
     for j = 2:NX+2
-         SOL(j,1) = u0(I(1) + (j-1)*dx);
+         SOL(j,1) = u0(I(1) + (j-2)*dx);
     end
     SOL(1,1) = SOL(2,1);
     SOL(NX+3,1) = SOL(NX+2,1);
 
     SOL(2,2) = SOL(2,1) + (lambda * ((mu/dx)*(SOL(3,1)-2*SOL(2,1)+SOL(1,1))));
-    
-    for j = 3:NX+2
+    SOL(NX+2,2) = -1/4*exp(-mu*dt); %end boundary
+    for j = 3:NX+1
         SOL(j,2) = SOL(j,1) + (lambda * ((mu/dx)*(SOL(j+1,1)-2*SOL(j,1)+SOL(j-1,1)))- (SOL(j,1)/2)*(SOL(j+1,1)-SOL(j-1,1)));
     end
     SOL(1,2) = SOL(2,2);
@@ -25,7 +25,7 @@ function [SOL,dx,dt] = FD_1D_BURGER_FUN2_EX4(mu,T,I,NT, NX ,u0, u0_t, uj_t)
     %SET UP OF THE LIFTING FUNCTION
     R= zeros(NX+3,NT+1);
 
-    for n = 1:NT+1
+    for n = 2:NT+1
         R(NX+2,n)= uj_t((n-1)*dt);
         R(NX+3,n) = R(NX+2,n);
     end
@@ -34,9 +34,10 @@ function [SOL,dx,dt] = FD_1D_BURGER_FUN2_EX4(mu,T,I,NT, NX ,u0, u0_t, uj_t)
     
     for n = 3:NT+1
         fj = zeros(NX+3,1);
-        Aj_vec = ones(NX+3,1);
-        Aj = diag(Aj_vec);
-        fj(2,1) = ((4/3) *SOL(1,n)) - ((1/3) * SOL(1,n-1));
+        %Aj_vec = ones(NX+3,1);
+        %Aj = diag(Aj_vec);
+        Aj = zeros(NX+3,NX+3);
+        fj(2,1) = ((4/3) *SOL(1,n-1)) - ((1/3) * SOL(1,n-2));
         
         %fj(NX+2,1) = SOL(NX+1,n);
         gamma0 = -(2/3)*dt*(mu/(dx^2));
@@ -53,7 +54,7 @@ function [SOL,dx,dt] = FD_1D_BURGER_FUN2_EX4(mu,T,I,NT, NX ,u0, u0_t, uj_t)
             gammai = -(2/3)*lambda* ((mu/dx)+(2*SOL(j-1,n-1)-SOL(j-1,n-2))/2);
             alfai = 1+(4/3*lambda*(mu/dx));
             betai = -(2/3)*lambda* ((mu/dx)-(2*SOL(j-1,n-1)-SOL(j-1,n-2))/2);
-            fj(j,1) = (4/3 * SOL(j,n-1))-betai*R(j+1,n);
+            fj(j,1) = (4/3 * SOL(j,n-1))-(1/3*SOL(j,n-2))-alfai*R(j,n)-betai*R(j+1,n)-gammai*R(j-1,n);
             %fj(j,1) = (4/3 * SOL(j,n-1))-(1/3*SOL(j,n-2));
             Aj(j,j-1) = gammai;
             Aj(j,j) = alfai;
@@ -65,6 +66,10 @@ function [SOL,dx,dt] = FD_1D_BURGER_FUN2_EX4(mu,T,I,NT, NX ,u0, u0_t, uj_t)
         Aj(:,end-1) = 0;
         Aj(end-1,end-1) = 1;
         fj(end-1,1)=0;
+        Aj(1,1) =1;
+        Aj(1,2) =-1;
+        Aj(end,end) = 1;
+        Aj(end,end-1) = -1;
 
         %Aj(NX+1,NX+2) = 0;
         %Aj(end,end-1)=-1;
