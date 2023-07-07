@@ -25,17 +25,17 @@ function [SOL,SOL_EX,L1_ERR,L2_ERR,LINF_ERR,dx,dt] = FD_1D_BURGER_FUN(mu,T,I,NT,
     end
 
     for n = 3:NT+1
-        fj = zeros(NX+1,1);
-        Aj_vec = ones(NX+1,1);
+        fj = zeros(NX+3,1);
+        Aj_vec = ones(NX+3,1);
         Aj = diag(Aj_vec);
-        fj(1,1) = SOL(1,n);
-        fj(NX+1,1) = SOL(NX+1,n);
-        for j = 2:NX
-            fj(j,1) = (4/3 * SOL(j,n-1))-(1/3*SOL(j,n-2));
+        fj(2,1) = SOL(1,n);
+        fj(NX+3,1) = SOL(NX+1,n);
+        for j = 3:NX+1
+            fj(j,1) = (4/3 * SOL(j-1,n-1))-(1/3*SOL(j-1,n-2));
             
-            gammai = -(2/3)*lambda* ((mu/dx)+(2*SOL(j,n-1)-SOL(j,n-2))/2);
+            gammai = -(2/3)*lambda* ((mu/dx)+(2*SOL(j-1,n-1)-SOL(j-1,n-2))/2);
             alfai = 1+(4/3*lambda*(mu/dx));
-            betai = -(2/3)*lambda* ((mu/dx)-(2*SOL(j,n-1)-SOL(j,n-2))/2);
+            betai = -(2/3)*lambda* ((mu/dx)-(2*SOL(j-1,n-1)-SOL(j-1,n-2))/2);
     
             Aj(j,j-1) = gammai;
             Aj(j,j) = alfai;
@@ -43,7 +43,7 @@ function [SOL,SOL_EX,L1_ERR,L2_ERR,LINF_ERR,dx,dt] = FD_1D_BURGER_FUN(mu,T,I,NT,
                    
         end
         SOLj = Aj\fj;
-        SOL(:,n) = SOLj;
+        SOL(:,n) = SOLj(2:NX+2,1);
 
     end
 
@@ -80,7 +80,7 @@ function [SOL,SOL_EX,L1_ERR,L2_ERR,LINF_ERR,dx,dt] = FD_1D_BURGER_FUN(mu,T,I,NT,
         LINF_ERR = norm(SOL_EX-SOL(:,indexError),Inf);
     elseif u_exf == 2
 
-        disp("u_exf = 2");
+        disp("u_exf = 2 start");
         n_harm = 10;
     
         c_0_fun = @(x) exp((-1/(2*mu*pi))*(1-cos(pi*x)));
@@ -89,7 +89,7 @@ function [SOL,SOL_EX,L1_ERR,L2_ERR,LINF_ERR,dx,dt] = FD_1D_BURGER_FUN(mu,T,I,NT,
         
         
         SOL_EX = zeros(NX+1,1);
-        t = (indexError)*dt;
+        t = (indexError-1)*dt;
         sum_den = zeros(NX+1,1);
         sum_num = zeros(NX+1,1);
         for nn = 1: n_harm
@@ -102,10 +102,11 @@ function [SOL,SOL_EX,L1_ERR,L2_ERR,LINF_ERR,dx,dt] = FD_1D_BURGER_FUN(mu,T,I,NT,
             
         end
         u_ex = (2* mu * pi )* (sum_num)./(c_0+(sum_den));
-        SOL_EX(:,n) = u_ex;
+        SOL_EX(:,1) = u_ex;
         L2_ERR  = norm(SOL_EX-SOL(:,indexError),2)*dx^0.5;
         L1_ERR   = norm(SOL_EX-SOL(:,indexError),1)*dx;
         LINF_ERR = norm(SOL_EX-SOL(:,indexError),Inf);
+        disp("u_exf = 2 end");
     elseif u_exf == 3
 
         dt = 0.0005;

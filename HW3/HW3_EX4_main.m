@@ -6,13 +6,12 @@ clear; close all; clc;
 
 
 
-
 % Initial data 
-u0 = @(x)   sin(pi*x);
+u0 = @(x)   1/4* cos(pi*x);
 
 % boudary conditions 
-u0_x = @(x) 0*x;
-uj_x = @(x) 0*x;
+u0_t = @(x) 0*x;
+uj_t = @(t,mu) - 1/4* exp(-mu*t);
 
 % Intervals
  T = 2.5;
