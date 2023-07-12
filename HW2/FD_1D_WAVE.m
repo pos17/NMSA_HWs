@@ -27,7 +27,7 @@ ux = @(x,t) 2*pi*cos(2*pi*x)*sin(2*pi*t);
 
 
 % velocity
-c = 2;
+c = 1;
 a1 =  c;
 a2 = -c;
 
@@ -44,16 +44,18 @@ up0 = @(x) 0.*x;             % for system of eq
 w0 = @(x) sqrt(1+c^2)/(2*c).*( 2*pi*sin(2*pi*x) + c*0.*x);
 w1 = @(x) sqrt(1+c^2)/(2*c).*(-2*pi*sin(2*pi*x) + c*0.*x);
 
-%boundary conditions
-gp1 = @(t) 0.*t;
-gp2 = @(t) 0.*t;
-
 % Intervals
 T = 1;
 I = [0 1];
 
+%boundary conditions
+gp1 = @(t) 0.*t;
+gp2 = @(t) 0.*t;
+% gp2 = @(t) c^2*ux(I(2), t);
+
+
 % Number of time steps
-NT = 2000;
+NT = 3000;
 % Number of space steps
 NX = 1000;
 
@@ -130,6 +132,7 @@ for n = 1:NT
     SOL_w(NX+1,n+1) = SOL_w(NX,n+1);  %constant extrapolation w~1(L,t) = w~1(L-h,t)
     % update w~_2(L,t)
     SOL_w(end,n+1)  = SOL_w(NX+1,n+1)-sqrt(1+c^2)/c*gp2((n+1)*dt);
+%     SOL_w(end,n+1)  = sqrt(1+c^2)/c^2*gp2((n+1)*dt)-SOL_w(NX+1,n+1);
 
     
     % compute u by using the transformation w = T w~

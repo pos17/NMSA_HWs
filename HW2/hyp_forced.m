@@ -1,5 +1,5 @@
-function [L2_error] = hyp_HW2(NX, NT)
-% clear; close all;% clc;
+% function [L2_error] = hyp_HW2(NX, NT)
+clear; close all;% clc;
 
 % problem
 % u_tt - c^2 u_xx = 0
@@ -16,18 +16,18 @@ function [L2_error] = hyp_HW2(NX, NT)
 
 
 % exact solution
-u = @(x,t) sin(2*pi*x)*cos(2*pi*t);
-ut = @(x,t) -2*pi*sin(2*pi*x)*sin(2*pi*t);
-ux = @(x, t) 2*pi*cos(2*pi*x)*cos(2*pi*t);
+% u = @(x,t) sin(2*pi*x)*cos(2*pi*t);
+% ut = @(x,t) -2*pi*sin(2*pi*x)*sin(2*pi*t);
+% ux = @(x, t) 2*pi*cos(2*pi*x)*cos(2*pi*t);
 
 % velocity and eigenvalues
-c = 1;
+c = 2;
 a1 = c;
 a2 = -c;
 
 % initial condition for u_t and u_x
-v0 = @(x) ut(x, 0);     % w1(x,0)
-ux0 = @(x) ux(x, 0);    % w2(x,0)
+v0 = @(x) 0.*x;     % w1(x,0)
+ux0 = @(x) 0.*x;    % w2(x,0)
 
 % initial condition for r1 and r2
 r1_init = @(x) sqrt(c^2 + 1)/(2*c) .* (v0(x) + c*ux0(x));
@@ -38,14 +38,14 @@ T = 1;
 I = [0, 1];
 
 % boundary conditions
-gp1 = @(t) 0.*t;
-g2 = @(t) c^2.*2*pi*cos(2*pi*t);
+gp1 = @(t) 10*pi * sin (2 * pi * (1 - 10 * t) );
+g2 = @(t) 0.*t;
 % g2 = @(t) c^2 * 2*pi*cos(2*pi*t);
 
 % Number of time steps
-% NT = NT;
-% % Number of space steps
-% NX = NX;
+NT = 2000;
+% Number of space steps
+NX = 800;
 
 dt = T/NT;
 dx = (I(2)-I(1))/NX;
@@ -92,11 +92,17 @@ for k = 1:NT
 
     end
 
+    if abs((k+1)*dt - 0.1) <= 0.05
+        ggp1 = gp1((k+1)*dt);
+    else
+        ggp1=0;
+    end
+
     % fixing boundary conditions
     % x=0
     SOL_r2(1, k+1) = SOL_r2(2, k+1); % constant extrapolation
 %     SOL_r2(1, k+1) = 2*SOL_r2(2, k+1)-SOL_r2(3, k+1); % linear extrapolation
-    SOL_r1(1, k+1) = sqrt(c^2+1)/c*gp1((k+1)*dt) + SOL_r2(1, k+1);
+    SOL_r1(1, k+1) = sqrt(c^2+1)/c*ggp1 + SOL_r2(1, k+1);
     
     % x=L
     SOL_r1(NX+1, k+1) = SOL_r1(NX, k+1); % constant extrapolation
@@ -113,7 +119,7 @@ end
 
 %% VISUALIZATION 
 time = linspace(0,T,NT+1); % ones(NX+1,1)*
-space = linspace(I(2),I(1),NX+1);%'*ones(1,NT+1);
+space = linspace(I(1),I(2),NX+1);%'*ones(1,NT+1);
 
 figure
 surf(time, space, SOL_w1,'EdgeColor','none');
@@ -123,43 +129,43 @@ ylabel('space x','FontSize',16);
 view(2);
 
 figure
-surf(time, space, SOL_w2,'EdgeColor','none');
+surf(time, space, -SOL_w2,'EdgeColor','none');
 title('u_x','FontSize',16);
 xlabel('time t','FontSize',16);
 ylabel('space x','FontSize',16);
 view(2);
 
 CFL_cond = lambda*a1
-close all
+% close all
 
 
 %% error computing
 
-% Computation of errors for t=T
-SOLu_EX  = zeros(NX+1,1);
-SOLut_EX = zeros(NX+1,1);
-SOLux_EX = zeros(NX+1,1);
-
-for j = 1:NX+1
-    SOLu_EX(j,1)  = u(I(1) + (j-1)*dx, NT*dt);
-    SOLut_EX(j,1) = ut(I(1) + (j-1)*dx, NT*dt);
-    SOLux_EX(j,1) = ux(I(1) + (j-1)*dx, NT*dt);
-end
-
-
-% for ut=w1
-L2ut_ERR   = norm(SOLut_EX-SOL_w1(:,k+1),2)*dx^0.5;
-% L1ut_ERR   = norm(SOLut_EX-SOL_w2(:,k+1),1)*dx;
-% LINFut_ERR = norm(SOLut_EX-SOL_w2(:,k+1),Inf);
-
-L2ux_ERR   = norm(SOLux_EX-SOL_w2(:,k+1),2)*dx^0.5;
-% L1ux_ERR   = norm(SOLux_EX-SOL_w2(:,k+1),1)*dx;
-% LINFux_ERR = norm(SOLux_EX-SOL_w2(:,k+1),Inf);
+% % Computation of errors for t=T
+% SOLu_EX  = zeros(NX+1,1);
+% SOLut_EX = zeros(NX+1,1);
+% SOLux_EX = zeros(NX+1,1);
 % 
-% Err_t = [L2ut_ERR, L1ut_ERR, LINFut_ERR]
-% Err_x = [L2ux_ERR, L1ux_ERR, LINFux_ERR]
-
-L2_error = [L2ut_ERR, L2ux_ERR];
+% for j = 1:NX+1
+%     SOLu_EX(j,1)  = u(I(1) + (j-1)*dx, NT*dt);
+%     SOLut_EX(j,1) = ut(I(1) + (j-1)*dx, NT*dt);
+%     SOLux_EX(j,1) = ux(I(1) + (j-1)*dx, NT*dt);
+% end
+% 
+% 
+% % for ut=w1
+% L2ut_ERR   = norm(SOLut_EX-SOL_w1(:,k+1),2)*dx^0.5;
+% % L1ut_ERR   = norm(SOLut_EX-SOL_w2(:,k+1),1)*dx;
+% % LINFut_ERR = norm(SOLut_EX-SOL_w2(:,k+1),Inf);
+% 
+% L2ux_ERR   = norm(SOLux_EX-SOL_w2(:,k+1),2)*dx^0.5;
+% % L1ux_ERR   = norm(SOLux_EX-SOL_w2(:,k+1),1)*dx;
+% % LINFux_ERR = norm(SOLux_EX-SOL_w2(:,k+1),Inf);
+% % 
+% % Err_t = [L2ut_ERR, L1ut_ERR, LINFut_ERR]
+% % Err_x = [L2ux_ERR, L1ux_ERR, LINFux_ERR]
+% 
+% L2_error = [L2ut_ERR, L2ux_ERR];
 
 
 

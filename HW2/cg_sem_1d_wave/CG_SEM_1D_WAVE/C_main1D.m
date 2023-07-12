@@ -1,4 +1,4 @@
-function [errors,solutions,femregion,Dati] = C_main1D(TestName,nRef)
+function [errors,solutions,femregion,Dati] = C_main1D(TestName, nRef, polyn, deltaT)
 %==========================================================================
 % Solution of the Wave Equation with spectral finite elements 
 % coupled with the leap-frog scheme 
@@ -45,6 +45,8 @@ addpath SemLib
 
 Dati = C_dati(TestName);
 Dati.nRefinement = nRef;
+Dati.fem = polyn;
+Dati.dt = deltaT;
 
 %==========================================================================
 % MESH GENERATION
@@ -65,6 +67,8 @@ Dati.nRefinement = nRef;
 %==========================================================================
 
 [M_nbc,A_nbc] = C_matrix1D(Dati,femregion);
+% spy(A_nbc);
+% saveas(gcf, "./MassMatrix_ref3_P2.png");
 
 %==========================================================================
 % BUILD FINITE ELEMENTS RHS a time 0
@@ -99,6 +103,10 @@ b_nbc = (M_nbc-0.5*Dati.dt^2*A_nbc)*u0 + Dati.dt*M_nbc*v0  + 0.5*Dati.dt^2*b_nbc
 if (strcmp(Dati.bc,'NN'))
     u1 = M_nbc\b_nbc;
 elseif(strcmp(Dati.bc,'DD') || strcmp(Dati.bc,'MM'))
+    [M,b,u_g] = C_bound_cond1D(M_nbc,b_nbc,femregion,Dati);
+    u1 = M\b;
+    u1 = u1 + u_g;
+elseif(strcmp(Dati.bc,'F'))
     [M,b,u_g] = C_bound_cond1D(M_nbc,b_nbc,femregion,Dati);
     u1 = M\b;
     u1 = u1 + u_g;
@@ -164,13 +172,17 @@ for t = Dati.dt : Dati.dt : Dati.T - Dati.dt
         [M,b,u_g] = C_bound_cond1D(M_nbc,b_nbc,femregion,Dati);
         u2 = M\b;
         u2 = u2 + u_g;
+    elseif(strcmp(Dati.bc,'F'))
+        [M,b,u_g] = C_bound_cond1D(M_nbc,b_nbc,femregion,Dati);
+        u2 = M\b;
+        u2 = u2 + u_g;
     else
         [M,b,u_g] = C_bound_cond1D(M_nbc,b_nbc,femregion,Dati);
         u2 = M\b;
         u2 = u2 + u_g;
     end
    [u2] = C_snapshot_1D(femregion,u2,Dati);
-   pause(0.015);
+   pause(0.0015);
     
    u_surf(k_surf,:) = u2;
    k_surf = k_surf + 1;
@@ -179,6 +191,20 @@ for t = Dati.dt : Dati.dt : Dati.T - Dati.dt
     u1 = u2;
     
 end
+
+u_t = 0*u_surf;
+u_x = 0*u_surf;
+
+for ii=2:length(u_t(:,1))
+    u_t(ii, :) = (u_surf(ii,:)-u_surf(ii-1,:))/Dati.dt;
+end
+for ii=2:length(u_x(1,:))
+    u_x(:, ii) = (u_surf(:,ii)-u_surf(:,ii-1))/(Dati.domain(2)/2^(nRef));
+end
+
+
+
+
 figure(100);
 surf(u_surf,'EdgeColor','None');
 gf = gca;
@@ -188,6 +214,26 @@ gf.XTickLabel = {num2str(min(x)),num2str(round(mean(x))) ,num2str(max(x))};
 gf.YTick = [0 Dati.T/2/Dati.dt Dati.T/Dati.dt];
 gf.YTickLabel = {num2str(0),num2str(Dati.T*0.5) ,num2str(Dati.T)};
 view(2); xlabel('space-axis'); ylabel('time-axis'); title('u_h(x,t)');
+
+figure(101);
+surf(u_t,'EdgeColor','None');
+gf = gca;
+xlim([1  length(u1)]); ylim([1 Dati.T/Dati.dt]);
+gf.XTick = [1 (length(u1)+1)/2 length(u1)];
+gf.XTickLabel = {num2str(min(x)),num2str(round(mean(x))) ,num2str(max(x))};
+gf.YTick = [0 Dati.T/2/Dati.dt Dati.T/Dati.dt];
+gf.YTickLabel = {num2str(0),num2str(Dati.T*0.5) ,num2str(Dati.T)};
+view(2); xlabel('space-axis'); ylabel('time-axis'); title('u_{h,t}(x,t)');
+
+figure(102);
+surf(u_x,'EdgeColor','None');
+gf = gca;
+xlim([1  length(u1)]); ylim([1 Dati.T/Dati.dt]);
+gf.XTick = [1 (length(u1)+1)/2 length(u1)];
+gf.XTickLabel = {num2str(min(x)),num2str(round(mean(x))) ,num2str(max(x))};
+gf.YTick = [0 Dati.T/2/Dati.dt Dati.T/Dati.dt];
+gf.YTickLabel = {num2str(0),num2str(Dati.T*0.5) ,num2str(Dati.T)};
+view(2); xlabel('space-axis'); ylabel('time-axis'); title('u_{h,x}(x,t)');
 %==========================================================================
 % POST-PROCESSING OF THE SOLUTION
 %==========================================================================
