@@ -43,9 +43,9 @@ g2 = @(t) 0.*t;
 % g2 = @(t) c^2 * 2*pi*cos(2*pi*t);
 
 % Number of time steps
-NT = 2000;
+NT = 10000;
 % Number of space steps
-NX = 800;
+NX = 256;
 
 dt = T/NT;
 dx = (I(2)-I(1))/NX;
@@ -122,20 +122,30 @@ time = linspace(0,T,NT+1); % ones(NX+1,1)*
 space = linspace(I(1),I(2),NX+1);%'*ones(1,NT+1);
 
 figure
-surf(time, space, SOL_w1,'EdgeColor','none');
-title('u_t','FontSize',16);
-xlabel('time t','FontSize',16);
-ylabel('space x','FontSize',16);
+% surf(time, space, SOL_w1,'EdgeColor','none');
+surf(space, time, SOL_w1','EdgeColor','none');
+title('u_t(x,t)','FontSize',16);
+colorbar
+caxis([-60,60])
+ylabel('time t','FontSize',16);
+xlabel('space x','FontSize',16);
 view(2);
+filename=["ut_LW_forced"];
+saveas(gcf, "./Plots/"+filename+".png")
 
 figure
-surf(time, space, -SOL_w2,'EdgeColor','none');
-title('u_x','FontSize',16);
-xlabel('time t','FontSize',16);
-ylabel('space x','FontSize',16);
+% surf(time, space, -SOL_w2,'EdgeColor','none');
+surf(space,time, -SOL_w2','EdgeColor','none');
+colorbar
+caxis([-30,30])
+title('u_x(x,t)','FontSize',16);
+ylabel('time t','FontSize',16);
+xlabel('space x','FontSize',16);
 view(2);
+filename=["ux_LW_forced"];
+saveas(gcf, "./Plots/"+filename+".png")
 
-CFL_cond = lambda*a1
+% CFL_cond = lambda*a1
 % close all
 
 

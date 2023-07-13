@@ -29,7 +29,7 @@ refinement_vector=Dati.refinement_vector;
 poly_vector = ["P2","P3", "P4", "P5"];
 t_vector = [0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001];
 deltaT = t_vector(6);
-poly = poly_vector(4);
+poly = poly_vector(1);
 num_test=length(refinement_vector);
 
 for k=1:num_test

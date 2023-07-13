@@ -1,28 +1,20 @@
+clear; close all; %clc;
 
-clear; close all; clc;
+dx = [0.001, 0.0005, 0.001, 0.0005, 0.001, 0.0005];
+dt = [0.001, 0.0005, 0.0005, 0.00025, 0.00025, 0.000125];
 
-NXX = [1000, 2000, 3000, 4000];
-NTT = [2000, 4000, 6000, 8000];
-
-T=1;
-L=1;
-dx = L./NXX;
-dt=T./NTT;
-
-err = zeros(3,2);
-
-for ii=1:length(NXX)
-    err(ii,:) = hyp_HW2(NXX(ii), NTT(ii));
+% err = zeros(2, length(dx));
+err = struct();
+for ii = 1:length(dx)
+    L2err = hyp_HW2(dx(ii), dt(ii));
+%     field1 = "dx="+num2str(dx(ii))+", dt="+num2str(dt(ii));
+    err.dx(ii) = dx(ii);
+    err.dt(ii) = dt(ii);
+    err.ut(ii) = L2err(1);
+    err.ux(ii) = L2err(2);
 end
 
-figure
-loglog(dt, err(:,1), "-o", LineWidth=2)
-grid minor
-xlabel('time res dt','FontSize',16);
-ylabel('|| u_t-u_{t,h} ||_{\Delta,2}','FontSize',16, Interpreter='tex');
-
-figure
-loglog(dx, err(:, 2), "-o", LineWidth=2)
-grid minor
-xlabel('space res dx','FontSize',16);
-ylabel('|| u_x-u_{x,h} ||_{\Delta,2}','FontSize',16, Interpreter='tex');
+err
+close all
+%%
+L2err = hyp_HW2(dx(1), dt(1));

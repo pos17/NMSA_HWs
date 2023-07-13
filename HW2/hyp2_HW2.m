@@ -1,4 +1,4 @@
-function [L2_error] = hyp_HW2(dx, dt)
+function [L2_error] = hyp2_HW2(dx, dt)
 % clear; close all;% clc;
 
 % problem
@@ -14,8 +14,6 @@ function [L2_error] = hyp_HW2(dx, dt)
 % w = [w1, w2]'
 % r = T^(-1) w = [r1, r2]'
 
-% NX = 1000;
-% NT = 3000;
 % exact solution
 u = @(x,t) sin(2*pi*x)*cos(2*pi*t);
 ut = @(x,t) -2*pi*sin(2*pi*x)*sin(2*pi*t);
@@ -43,40 +41,38 @@ gp1 = @(t) 0.*t;
 g2 = @(t) c^2.*2*pi*cos(2*pi*t);
 % g2 = @(t) c^2 * 2*pi*cos(2*pi*t);
 
-% Number of time steps
-% NT = NT;
-% % Number of space steps
-% NX = NX;
-
 NT = T/dt;
 NX = (I(2)-I(1))/dx;
 lambda = dt/dx;
 
-SOL_r1 = zeros(NX+1, NT+1);
-SOL_r2 = zeros(NX+1, NT+1);
+SOL_r1 = zeros(NX+3, NT+1);
+SOL_r2 = zeros(NX+3, NT+1);
 SOL_w1 = zeros(NX+1, NT+1);
 SOL_w2 = zeros(NX+1, NT+1);
 
 % setting initial conditions on solutions
 for j = 1 : NX+1
-    SOL_r1(j,1)      = r1_init(I(1) + (j-1)*dx);
-    SOL_r2(j,1)      = r2_init(I(1) + (j-1)*dx);
     SOL_w1(j,1)      = v0(I(1) + (j-1)*dx);
     SOL_w2(j,1)      = ux0(I(1) + (j-1)*dx);
 end
-
+for j = 2:NX+2
+    SOL_r1(j,1)      = r1_init(I(1) + (j-1)*dx);
+    SOL_r2(j,1)      = r2_init(I(1) + (j-1)*dx);
+end
+SOL_r1(1,1) = SOL_r1(2,1);
+SOL_r2(NX+3,1) = SOL_r1(NX+2,1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % menu:
 %       flag: 1 => LAX-WENDROFF SCHEME
 %       flag: 2 => LAX-FRIEDRICHS SCHEME
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-flag = 2;
-
+flag = 1;
+%
 
 % applying finite difference scheme
 for k = 1:NT
-    for j = 2:NX % takes only internal nodes, no boundaries
+    for j = 2:NX+2 % takes only internal nodes, no boundaries
 
         if flag == 1 % LAX-WENDROFF SCHEME
             SOL_r1(j, k+1) = SOL_r1(j,k) - 0.5*lambda*a1*(SOL_r1(j+1,k)-SOL_r1(j-1,k))...
@@ -95,19 +91,19 @@ for k = 1:NT
 
     % fixing boundary conditions
     % x=0
-    SOL_r2(1, k+1) = SOL_r2(2, k+1); % constant extrapolation
-%     SOL_r2(1, k+1) = 2*SOL_r2(2, k+1)-SOL_r2(3, k+1); % linear extrapolation
+%     SOL_r2(1, k+1) = SOL_r2(2, k+1); % constant extrapolation
+    SOL_r2(1, k+1) = 2*SOL_r2(2, k+1) - SOL_r2(3, k+1); % linear extrapolation
     SOL_r1(1, k+1) = sqrt(c^2+1)/c*gp1((k+1)*dt) + SOL_r2(1, k+1);
     
     % x=L
-    SOL_r1(NX+1, k+1) = SOL_r1(NX, k+1); % constant extrapolation
-%     SOL_r1(NX+1, k+1) = 2*SOL_r1(NX, k+1) - SOL_r1(NX-1, k+1); % linear extrapolation
-    SOL_r2(NX+1, k+1) = sqrt(c^2+1)/c^2 * g2((k+1)*dt) - SOL_r1(NX+1, k+1);
+%     SOL_r1(NX+3, k+1) = SOL_r1(NX+2, k+1); % constant extrapolation
+    SOL_r1(NX+3, k+1) = 2*SOL_r1(NX+2, k+1)-SOL_r1(NX+1, k+1); % constant extrapolation
+    SOL_r2(NX+3, k+1) = sqrt(c^2+1)/c^2 * g2((k+1)*dt) - SOL_r1(NX+3, k+1);
 
    
     % compute w using transformation w = T r
-    SOL_w1(:, k+1) = c/sqrt(1+c^2) * (SOL_r1(:, k+1) - SOL_r2(:, k+1));
-    SOL_w2(:, k+1) = 1/sqrt(1+c^2) * (SOL_r1(:, k+1) + SOL_r2(:, k+1));
+    SOL_w1(:, k+1) = c/sqrt(1+c^2) * (SOL_r1(2:NX+2, k+1) - SOL_r2(2:NX+2, k+1));
+    SOL_w2(:, k+1) = 1/sqrt(1+c^2) * (SOL_r1(2:NX+2, k+1) + SOL_r2(2:NX+2, k+1));
     
     
 end
@@ -150,9 +146,15 @@ end
 
 % for ut=w1
 L2ut_ERR   = norm(SOLut_EX-SOL_w1(:,k+1),2)*dx^0.5;
+% L1ut_ERR   = norm(SOLut_EX-SOL_w2(:,k+1),1)*dx;
+% LINFut_ERR = norm(SOLut_EX-SOL_w2(:,k+1),Inf);
 
 L2ux_ERR   = norm(SOLux_EX-SOL_w2(:,k+1),2)*dx^0.5;
-
+% L1ux_ERR   = norm(SOLux_EX-SOL_w2(:,k+1),1)*dx;
+% LINFux_ERR = norm(SOLux_EX-SOL_w2(:,k+1),Inf);
+% 
+% Err_t = [L2ut_ERR, L1ut_ERR, LINFut_ERR]
+% Err_x = [L2ux_ERR, L1ux_ERR, LINFux_ERR]
 
 L2_error = [L2ut_ERR, L2ux_ERR];
 

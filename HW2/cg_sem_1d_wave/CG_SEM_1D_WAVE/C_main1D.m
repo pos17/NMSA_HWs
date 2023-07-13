@@ -126,7 +126,7 @@ else
     
 end
 
-[u1] = C_snapshot_1D(femregion,u1,Dati);
+% [u1] = C_snapshot_1D(femregion,u1,Dati);
 
 
 fprintf('============================================================\n')
@@ -137,10 +137,12 @@ u_surf = zeros(length(time_surf),size(u1,1));
 u_surf(1,:) = u0;
 u_surf(2,:) = u1;
 
+counter = 0;
 k_surf = 3;
+fprintf("----------\n");
 for t = Dati.dt : Dati.dt : Dati.T - Dati.dt
     
-    fprintf('time = %5.3e \n',t);
+%     fprintf('time = %5.3e \n',t);
     
     Dati.t = t;
     [b_nbc] = C_rhs1D(Dati,femregion);
@@ -181,28 +183,42 @@ for t = Dati.dt : Dati.dt : Dati.T - Dati.dt
         u2 = M\b;
         u2 = u2 + u_g;
     end
-   [u2] = C_snapshot_1D(femregion,u2,Dati);
-   pause(0.0015);
+%    [u2] = C_snapshot_1D(femregion,u2,Dati);
+%    pause(0.015);
     
    u_surf(k_surf,:) = u2;
    k_surf = k_surf + 1;
     % update
     u0 = u1;
     u1 = u2;
+
+   if (t > counter*(Dati.T/10))
+       fprintf("=");
+       counter=counter+1;
+   end
     
 end
 
-u_t = 0*u_surf;
-u_x = 0*u_surf;
 
-for ii=2:length(u_t(:,1))
-    u_t(ii, :) = (u_surf(ii,:)-u_surf(ii-1,:))/Dati.dt;
-end
-for ii=2:length(u_x(1,:))
-    u_x(:, ii) = (u_surf(:,ii)-u_surf(:,ii-1))/(Dati.domain(2)/2^(nRef));
-end
+% u_t = 0*u_surf;
+% u_x = 0*u_surf;
 
+% for ii=2:length(u_t(:,1))
+%     u_t(ii, :) = (u_surf(ii,:)-u_surf(ii-1,:))/Dati.dt;
+% end
+% for ii=2:length(u_x(1,:))
+%     u_x(:, ii) = (u_surf(:,ii)-u_surf(:,ii-1))/(Dati.domain(2)/2^(nRef));
+% end
+% for ii=1:length(u_t(1,:))
+%     u_t(:, ii) = gradient(u_surf(:,ii), Dati.dt);
+% end
+% for ii=1:length(u_x(:,1))
+%       u_x(ii, :) = gradient(u_surf(ii,:), Dati.domain(2)/2^(nRef));
+% end
 
+[u_x, u_t] = gradient(u_surf);
+u_x = u_x./ (Dati.domain(2)/2^(nRef));
+u_t = u_t/Dati.dt;
 
 
 figure(100);
@@ -210,7 +226,7 @@ surf(u_surf,'EdgeColor','None');
 gf = gca;
 xlim([1  length(u1)]); ylim([1 Dati.T/Dati.dt]);
 gf.XTick = [1 (length(u1)+1)/2 length(u1)];
-gf.XTickLabel = {num2str(min(x)),num2str(round(mean(x))) ,num2str(max(x))};
+gf.XTickLabel = {num2str(min(x)),num2str(0.5) ,num2str(max(x))};
 gf.YTick = [0 Dati.T/2/Dati.dt Dati.T/Dati.dt];
 gf.YTickLabel = {num2str(0),num2str(Dati.T*0.5) ,num2str(Dati.T)};
 view(2); xlabel('space-axis'); ylabel('time-axis'); title('u_h(x,t)');
@@ -218,9 +234,11 @@ view(2); xlabel('space-axis'); ylabel('time-axis'); title('u_h(x,t)');
 figure(101);
 surf(u_t,'EdgeColor','None');
 gf = gca;
+colorbar
+caxis([-60,60])
 xlim([1  length(u1)]); ylim([1 Dati.T/Dati.dt]);
 gf.XTick = [1 (length(u1)+1)/2 length(u1)];
-gf.XTickLabel = {num2str(min(x)),num2str(round(mean(x))) ,num2str(max(x))};
+gf.XTickLabel = {num2str(min(x)),num2str(0.5) ,num2str(max(x))};
 gf.YTick = [0 Dati.T/2/Dati.dt Dati.T/Dati.dt];
 gf.YTickLabel = {num2str(0),num2str(Dati.T*0.5) ,num2str(Dati.T)};
 view(2); xlabel('space-axis'); ylabel('time-axis'); title('u_{h,t}(x,t)');
@@ -228,9 +246,11 @@ view(2); xlabel('space-axis'); ylabel('time-axis'); title('u_{h,t}(x,t)');
 figure(102);
 surf(u_x,'EdgeColor','None');
 gf = gca;
+colorbar
+caxis([-17,17])
 xlim([1  length(u1)]); ylim([1 Dati.T/Dati.dt]);
 gf.XTick = [1 (length(u1)+1)/2 length(u1)];
-gf.XTickLabel = {num2str(min(x)),num2str(round(mean(x))) ,num2str(max(x))};
+gf.XTickLabel = {num2str(min(x)),num2str(0.5) ,num2str(max(x))};
 gf.YTick = [0 Dati.T/2/Dati.dt Dati.T/Dati.dt];
 gf.YTickLabel = {num2str(0),num2str(Dati.T*0.5) ,num2str(Dati.T)};
 view(2); xlabel('space-axis'); ylabel('time-axis'); title('u_{h,x}(x,t)');
