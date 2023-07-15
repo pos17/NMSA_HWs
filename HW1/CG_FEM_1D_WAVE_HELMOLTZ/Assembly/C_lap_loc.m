@@ -28,6 +28,7 @@ for i=1:nln
             Jdet = BJ;       % determinant 
             %disp(x)
             K_loc(i,j) = K_loc(i,j) + (Jdet.*w_1D(k)) .* shape_1D(k) .* c2 .* ((Grad(k,:,i) * Binv) * (Grad(k,:,j) * Binv )');
+%             K_loc(i,j) = K_loc(i,j) + (Jdet.*w_1D(k)) .* shape_1D(k) .* ((Grad(k,:,i) * Binv) * (Grad(k,:,j) * Binv )');
         end
     end
 end

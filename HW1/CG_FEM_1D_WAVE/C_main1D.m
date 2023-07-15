@@ -1,4 +1,4 @@
-function [errors,solutions,femregion,Dati,u_snp] = C_main1D(TestName,nRef)
+function [errors,solutions,femregion,Dati,u_snp] = C_main1D(TestName,nRef,dt)
 %==========================================================================
 % Solution of the Wave Equation with linear finite elements 
 % coupled with the leap-frog scheme 
@@ -44,6 +44,7 @@ addpath Postprocessing
 
 Dati = C_dati(TestName);
 Dati.nRefinement = nRef;
+Dati.dt =dt;
 gamma = sqrt(Dati.c2/Dati.domain(2));
 
 %==========================================================================
@@ -75,7 +76,7 @@ Dati.t = 0;
 [b_nbc] = C_rhs1D(Dati,femregion);
 t = 0;
 
-F_1 = b_nbc
+F_1 = b_nbc;
 
 if(strcmp(Dati.bc,'N'))
     b_nbc(1)   = b_nbc(1)   + eval(Dati.neumann1);
@@ -91,7 +92,7 @@ end
 % BUILD INITIAL CONDITIONS
 %==========================================================================
 x = femregion.coord;
-u0 = eval(Dati.u0)
+u0 = eval(Dati.u0);
 v0 = eval(Dati.v0);
 
 
@@ -323,17 +324,27 @@ if (Dati.plot_errors)
 end
 
 if(strcmp(Dati.st_plot, "Y"))
+    space = Dati.domain(1):(Dati.domain(2)-Dati.domain(1))/(2^nRef):Dati.domain(2);
+    time = 0:dt:Dati.T;
     figure(10)
-    surf(u_snp, EdgeColor="none");
+    surf(time,space,u_snp, EdgeColor="none");
     view(0,90)
     title('Space time evolution')
-    saveas(gcf,strcat("Plots/",Dati.name,"_SpaceTimeEvolution.png"))
+    xlabel("Time t")
+    ylabel("Space x")
+    xlim([0, Dati.T])
+    ylim([Dati.domain(1), Dati.domain(2)])
+    saveas(gcf,strcat("Plots/Test",Dati.name,"_SpaceTimeEvolution_dt.png"))
 
     figure(11)
-    surf(p_snp, EdgeColor="none");
+    surf(time, space, p_snp, EdgeColor="none");
     view(0,90)
     title('Pressure Field evolution')
-    saveas(gcf,strcat("Plots/",Dati.name,"_PresFieldEvol.png"))
+    xlabel("Time t")
+    ylabel("Space x")
+    xlim([0, Dati.T])
+    ylim([Dati.domain(1), Dati.domain(2)])
+    saveas(gcf,strcat("Plots/Test",Dati.name,"_PresFieldEvol_dt.png"))
     
 end 
 

@@ -1,4 +1,4 @@
-function [errors_table,rates]=C_convergence_test(test_name)
+function [errors_table,rates]=C_convergence_test(test_name, dt)
 %% [errors_table,rates]=C_convergence_test(test_name)
 %==========================================================================
 % Error analysis varying the mesh size h 
@@ -23,12 +23,13 @@ addpath Postprocessing
 
 
 Dati=C_dati(test_name);
+Dati.dt = dt;
 
 refinement_vector=Dati.refinement_vector;
 num_test=length(refinement_vector);
 
 for k=1:num_test
-    [errors,solutions,femregion,Dati]=C_main1D(test_name,refinement_vector(k));
+    [errors,solutions,femregion,Dati]=C_main1D(test_name,refinement_vector(k),dt);
     Error_L2(k)=errors.Error_L2;
     Error_SEMI_H1(k)=errors.Error_SEMI_H1;
     Error_H1(k)=errors.Error_H1;
@@ -64,6 +65,7 @@ rates=struct('rate_L2',rate_L2,...
          
 
 % ERROR PLOTS
+figure('Renderer', 'painters', 'Position', [10 10 1000 800]);
 hs = subplot(2,1,1);
 loglog(h,h.^(p+1),'-+b','Linewidth',2);
 hold on
@@ -85,6 +87,7 @@ ylabel('H^1-error')
 xlabel('h');
 hold off
 hs.FontSize = 12;
-saveas(gcf,"Plots/ErrorPlotsT01.png")
+filename = [test_name+"_dt"+num2str(dt)]
+saveas(gcf,"Plots/"+filename+".png")
 
  
