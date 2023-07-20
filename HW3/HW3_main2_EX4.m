@@ -105,7 +105,7 @@ for i = 1:errorsMaxIndex
     
     [SOL,dx,dt] = FD_1D_BURGER_FUN2_EX4(mu,T,I,NT, NX ,u0, u0_t, uj_t);
     disp("dx="+num2str(dx));
-    SOL_EXX = SOL_EX(1:2^(i):end,2001);
+    SOL_EXX = SOL_EX(1:2^(i):end,5001);
     L2_ERR  = norm(SOL_EXX-SOL(:,indexError),2)*(h_base*(2^i))^0.5;
     LINF_ERR = norm(SOL_EXX-SOL(:,indexError),Inf);
     l2_errors_h(i,1) = L2_ERR;
@@ -118,9 +118,9 @@ for i = 1:errorsMaxIndex
     
     NT= T/(dt_base*(2^i));
     indexError = NT+1;
-    [SOL,dx,dt] = FD_1D_BURGER_FUN2(mu,T,I,NT, NX ,u0, u0_t, uj_t);
+    [SOL,dx,dt] = FD_1D_BURGER_FUN2_EX4(mu,T,I,NT, NX ,u0, u0_t, uj_t);
     disp("dt="+num2str(dt));
-    SOL_EXX = SOL_EX(:,2001);
+    SOL_EXX = SOL_EX(:,5001);
     L2_ERR  = norm(SOL_EXX-SOL(:,indexError),2)*(dt_base*(2^i))^0.5;
     LINF_ERR = norm(SOL_EXX-SOL(:,indexError),Inf);
     l2_errors_t(i,1) = L2_ERR;
@@ -297,7 +297,7 @@ for i = 1:errorsMaxIndex
     
     [SOL,dx,dt] = FD_1D_BURGER_FUN2_EX4(mu,T,I,NT, NX ,u0, u0_t, uj_t);
     disp("dx="+num2str(dx));
-    SOL_EXX = SOL_EX(1:2^(i):end,2001);
+    SOL_EXX = SOL_EX(1:2^(i):end,5001);
     L2_ERR  = norm(SOL_EXX-SOL(:,indexError),2)*(h_base*(2^i))^0.5;
     LINF_ERR = norm(SOL_EXX-SOL(:,indexError),Inf);
     l2_errors_h(i,1) = L2_ERR;
@@ -310,9 +310,9 @@ for i = 1:errorsMaxIndex
     
     NT= T/(dt_base*(2^i));
     indexError = NT+1;
-    [SOL,dx,dt] = FD_1D_BURGER_FUN2(mu,T,I,NT, NX ,u0, u0_t, uj_t);
+    [SOL,dx,dt] = FD_1D_BURGER_FUN2_EX4(mu,T,I,NT, NX ,u0, u0_t, uj_t);
     disp("dt="+num2str(dt));
-    SOL_EXX = SOL_EX(:,2001);
+    SOL_EXX = SOL_EX(:,5001);
     L2_ERR  = norm(SOL_EXX-SOL(:,indexError),2)*(dt_base*(2^i))^0.5;
     LINF_ERR = norm(SOL_EXX-SOL(:,indexError),Inf);
     l2_errors_t(i,1) = L2_ERR;
@@ -354,7 +354,7 @@ E_1Inf_t = lInf_errors_t(1,1);
 E_2Inf_t = lInf_errors_t(end,1);
 ptINF = log(E_1Inf_t/E_2Inf_t)/log(dt_base*2/(dt_base*(2^(errorsMaxIndex))));
 convInf_val_t = zeros(errorsMaxIndex+1,1);
-for i = 0:errorsMaxIndex-1
+for i = 0:errorsMaxIndex
     convInf_val_t(i+1,1) = (dt_base*(2^i))^(ptINF);
 end
 
@@ -485,7 +485,7 @@ for i = 1:errorsMaxIndex
     
     [SOL,dx,dt] = FD_1D_BURGER_FUN2_EX4(mu,T,I,NT, NX ,u0, u0_t, uj_t);
     disp("dx="+num2str(dx));
-    SOL_EXX = SOL_EX(1:2^(i):end,2001);
+    SOL_EXX = SOL_EX(1:2^(i):end,5001);
     L2_ERR  = norm(SOL_EXX-SOL(:,indexError),2)*(h_base*(2^i))^0.5;
     LINF_ERR = norm(SOL_EXX-SOL(:,indexError),Inf);
     l2_errors_h(i,1) = L2_ERR;
@@ -498,9 +498,9 @@ for i = 1:errorsMaxIndex
     
     NT= T/(dt_base*(2^i));
     indexError = NT+1;
-    [SOL,dx,dt] = FD_1D_BURGER_FUN2(mu,T,I,NT, NX ,u0, u0_t, uj_t);
+    [SOL,dx,dt] = FD_1D_BURGER_FUN2_EX4(mu,T,I,NT, NX ,u0, u0_t, uj_t);
     disp("dt="+num2str(dt));
-    SOL_EXX = SOL_EX(:,2001);
+    SOL_EXX = SOL_EX(:,5001);
     L2_ERR  = norm(SOL_EXX-SOL(:,indexError),2)*(dt_base*(2^i))^0.5;
     LINF_ERR = norm(SOL_EXX-SOL(:,indexError),Inf);
     l2_errors_t(i,1) = L2_ERR;
@@ -542,7 +542,7 @@ E_1Inf_t = lInf_errors_t(1,1);
 E_2Inf_t = lInf_errors_t(end,1);
 ptINF = log(E_1Inf_t/E_2Inf_t)/log(dt_base*2/(dt_base*(2^(errorsMaxIndex))));
 convInf_val_t = zeros(errorsMaxIndex+1,1);
-for i = 0:errorsMaxIndex-1
+for i = 0:errorsMaxIndex
     convInf_val_t(i+1,1) = (dt_base*(2^i))^(ptINF);
 end
 

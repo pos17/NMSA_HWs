@@ -26,7 +26,7 @@ function [SOL,dx,dt] = FD_1D_BURGER_FUN2_EX4(mu,T,I,NT, NX ,u0, u0_t, uj_t)
     R= zeros(NX+3,NT+1);
 
     for n = 2:NT+1
-        R(NX+2,n)= uj_t((n-1)*dt);
+        R(NX+2,n)= uj_t((n)*dt);
         R(NX+3,n) = R(NX+2,n);
     end
 
