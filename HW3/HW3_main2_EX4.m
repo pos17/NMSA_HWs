@@ -38,7 +38,8 @@ uj_t = @(t) -(1/4)*exp(-mu*t);
 
 %SOL_EX = EXSOL_1D_BURGER_FUN(I,T,NX,NT,mu);
 
-figure('Renderer', 'painters', 'Position', [100 100 1000 600]);
+%figure('Renderer', 'painters', 'Position', [100 100 1000 600]);
+figure()
 space = linspace(I(1),I(2),NX+1);
 index1 = round(0.1 / dt);
 index2 = round(0.5 / dt);
@@ -69,11 +70,17 @@ hold on
 plot(space,amp3,'LineWidth',2);
 hold on
 plot(spaceEx,ampEx3,"--",'LineWidth',2);
-title("Numerical to exact solution comparison",'FontSize',16,"Interpreter","latex")
-xlabel('space x ','FontSize',16,"Interpreter","latex");
-ylabel('$u(x)$','FontSize',16,"Interpreter","latex");
-legend(["$T=0.1$","$T=0.1$ exact","$T=0.5$","$T=0.5$ exact","$T=2.3$","$T=2.3$ exact"],'FontSize',16,"Interpreter","latex")
+% title("Numerical to exact solution comparison",'FontSize',16,"Interpreter","latex")
+% xlabel('space x ','FontSize',16,"Interpreter","latex");
+% ylabel('$u(x)$','FontSize',16,"Interpreter","latex");
+% legend(["$T=0.1$","$T=0.1$ exact","$T=0.5$","$T=0.5$ exact","$T=2.3$","$T=2.3$ exact"],'FontSize',16,"Interpreter","latex")
+% saveas(gcf, ".\plots\amp_mu10_EX4.png")
+title("Numerical to exact solution comparison")
+xlabel('space x');
+ylabel('u(x)');
+legend(["T=0.1","T=0.1 exact","T=0.5","T=0.5 exact","T=2.3","T=2.3 exact"])
 saveas(gcf, ".\plots\amp_mu10_EX4.png");
+
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Error and order of convergence 
@@ -162,57 +169,81 @@ E_1Inf_t = lInf_errors_t(1,1);
 E_2Inf_t = lInf_errors_t(end,1);
 ptINF = log(E_1Inf_t/E_2Inf_t)/log(dt_base*2/(dt_base*(2^(errorsMaxIndex))));
 convInf_val_t = zeros(errorsMaxIndex+1,1);
-for i = 0:errorsMaxIndex-1
+for i = 0:errorsMaxIndex
     convInf_val_t(i+1,1) = (dt_base*(2^i))^(ptINF);
 end
 
 hhtt= 0.0005*(2.^(0:3));
 hhtt1= 0.0005*(2.^(1:3));
-figure('Renderer', 'painters', 'Position', [100 100 1000 600]);
+%figure('Renderer', 'painters', 'Position', [100 100 1000 600]);
 
-subplot(2,2,1)
-loglog(hhtt1,l2_errors_h,"o-");
+%subplot(2,2,1)
+figure()
+loglog(hhtt1,l2_errors_h,'-+b','LineWidth',2);
 hold on 
-loglog(hhtt,conv2_val_h,"o-");
-title("$L^2$ norm and convergence error",'FontSize',16,"Interpreter","latex")
-xlabel('h','FontSize',16,"Interpreter","latex");
-ylabel('$L^2$ error','FontSize',16,"Interpreter","latex");
-legend(["$||u-u_{ex}||_2$","$h_2^{q}$"],'FontSize',16,"Interpreter","latex")
+loglog(hhtt,conv2_val_h,'-or','LineWidth',2);
+% title("$L^2$ norm and convergence error",'FontSize',16,"Interpreter","latex")
+% xlabel('h','FontSize',16,"Interpreter","latex");
+% ylabel('$L^2$ error','FontSize',16,"Interpreter","latex");
+% legend(["$||u-u_{ex}||_2$","$h_2^{q}$"],'FontSize',16,"Interpreter","latex")
+title("L^2 norm and convergence error")
+xlabel('h');
+ylabel('L^2 error');
+legend(["||u-u_{ex}||_2","h_2^{q}"])
 
-%saveas(gcf, ".\plots\L2h_error_conv_mu1.png");
-disp("q = "+num2str(2));
-subplot(2,2,2)
-loglog(hhtt1,lInf_errors_h,"o-");
-hold on 
-loglog(hhtt,convInf_val_h,"o-");
-title("$L^{\infty}$ norm and convergence error",'FontSize',16,"Interpreter","latex")
-xlabel('h','FontSize',16,"Interpreter","latex");
-ylabel('$L^{\infty}$ error','FontSize',16,"Interpreter","latex");
-legend(["$||u-u_{ex}||_{\infty}$","$h_{\infty}^{q}$"],'FontSize',16,"Interpreter","latex")
-%saveas(gcf, ".\plots\LINFh_error_conv_mu1.png");
-disp("q = "+num2str(2));
+saveas(gcf, ".\plots\L2h_error_conv_mu10_ex4.png");
 
-subplot(2,2,3)
-loglog(hhtt1,l2_errors_t,"o-");
-hold on 
-loglog(hhtt,conv2_val_t,"o-");
-title("$L^2$ norm and convergence error",'FontSize',16,"Interpreter","latex")
-xlabel('$\Delta t$','FontSize',16,"Interpreter","latex");
-ylabel('$L^2$ error','FontSize',16,"Interpreter","latex");
-legend(["$||u-u_{ex}||_2$","$\Delta t_2^{p}$"],'FontSize',16,"Interpreter","latex")
-%saveas(gcf, ".\plots\L2h_error_conv_mu1.png");
-disp("q = "+num2str(2));
+disp("q2 = "+num2str(ph2));
 
-subplot(2,2,4)
-loglog(hhtt1,lInf_errors_t,"o-");
+%subplot(2,2,2)
+figure()
+loglog(hhtt1,lInf_errors_h,'-+b','LineWidth',2);
 hold on 
-loglog(hhtt,convInf_val_t,"o-");
-title("$L^{\infty}$ norm and convergence error",'FontSize',16,"Interpreter","latex")
-xlabel('$\Delta t$','FontSize',16,"Interpreter","latex");
-ylabel('$L^{\infty}$ error','FontSize',16,"Interpreter","latex");
-legend(["$||u-u_{ex}||_{\infty}$","$\Delta t_{\infty}^{p}$"],'FontSize',16,"Interpreter","latex")
-saveas(gcf, ".\plots\_error_conv_mu10_EX4.png");
-disp("q = "+num2str(2));
+loglog(hhtt,convInf_val_h,'-or','LineWidth',2);
+% title("$L^{\infty}$ norm and convergence error",'FontSize',16,"Interpreter","latex")
+% xlabel('h','FontSize',16,"Interpreter","latex");
+% ylabel('$L^{\infty}$ error','FontSize',16,"Interpreter","latex");
+% legend(["$||u-u_{ex}||_{\infty}$","$h_{\infty}^{q}$"],'FontSize',16,"Interpreter","latex")
+title("L^{\infty} norm and convergence error")
+xlabel('h');
+ylabel('L^{\infty} error');
+legend(["||u-u_{ex}||_{\infty}","h_{\infty}^{q}"])
+
+saveas(gcf, ".\plots\LINFh_error_conv_mu10_ex4.png");
+disp("qinf = "+num2str(phINF));
+
+%subplot(2,2,3)
+figure()
+loglog(hhtt1,l2_errors_t,'-+b','LineWidth',2);
+hold on 
+loglog(hhtt,conv2_val_t,'-or','LineWidth',2);
+% title("$L^2$ norm and convergence error",'FontSize',16,"Interpreter","latex")
+% xlabel('$\Delta t$','FontSize',16,"Interpreter","latex");
+% ylabel('$L^2$ error','FontSize',16,"Interpreter","latex");
+% legend(["$||u-u_{ex}||_2$","$\Delta t_2^{p}$"],'FontSize',16,"Interpreter","latex")
+title("L^2 norm and convergence error")
+xlabel('\Delta t');
+ylabel('L^2 error');
+legend(["||u-u_{ex}||_2","\Delta t_2^{p}"])
+saveas(gcf, ".\plots\L2t_error_conv_mu10_ex4.png");
+disp("p2 = "+num2str(pt2));
+
+%subplot(2,2,4)
+figure()
+loglog(hhtt1,lInf_errors_t,'-+b','LineWidth',2);
+hold on 
+loglog(hhtt,convInf_val_t,'-or','LineWidth',2);
+% title("$L^{\infty}$ norm and convergence error",'FontSize',16,"Interpreter","latex")
+% xlabel('$\Delta t$','FontSize',16,"Interpreter","latex");
+% ylabel('$L^{\infty}$ error','FontSize',16,"Interpreter","latex");
+% legend(["$||u-u_{ex}||_{\infty}$","$\Delta t_{\infty}^{p}$"],'FontSize',16,"Interpreter","latex")
+title("L^{\infty} norm and convergence error")
+xlabel('\Delta t');
+ylabel('L^{\infty} error');
+legend(["||u-u_{ex}||_{\infty}","\Delta t_{\infty}^{p}"])
+saveas(gcf, ".\plots\LINFt_error_conv_mu10_ex4.png");
+%saveas(gcf, ".\plots\_error_conv_mu10_EX4.png");
+disp("pINF = "+num2str(ptINF));
 
 
 
@@ -261,10 +292,10 @@ hold on
 plot(space,amp3,'LineWidth',2);
 hold on
 plot(spaceEx,ampEx3,"--",'LineWidth',2);
-title("Numerical to exact solution comparison",'FontSize',16,"Interpreter","latex")
-xlabel('space x ','FontSize',16,"Interpreter","latex");
-ylabel('$u(x)$','FontSize',16,"Interpreter","latex");
-legend(["$T=0.1$","$T=0.1$ exact","$T=0.5$","$T=0.5$ exact","$T=2.3$","$T=2.3$ exact"],'FontSize',16,"Interpreter","latex")
+title("Numerical to exact solution comparison")
+xlabel('space x ');
+ylabel('u(x)');
+legend(["T=0.1","T=0.1 exact","T=0.5","T=0.5 exact","T=2.3","T=2.3 exact"])
 saveas(gcf, ".\plots\amp_mu1_EX4.png");
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -360,51 +391,75 @@ end
 
 hhtt= 0.0005*(2.^(0:3));
 hhtt1= 0.0005*(2.^(1:3));
-figure('Renderer', 'painters', 'Position', [100 100 1000 600]);
+%figure('Renderer', 'painters', 'Position', [100 100 1000 600]);
 
-subplot(2,2,1)
-loglog(hhtt1,l2_errors_h,"o-");
+%subplot(2,2,1)
+figure()
+loglog(hhtt1,l2_errors_h,'-+b','LineWidth',2);
 hold on 
-loglog(hhtt,conv2_val_h,"o-");
-title("$L^2$ norm and convergence error",'FontSize',16,"Interpreter","latex")
-xlabel('h','FontSize',16,"Interpreter","latex");
-ylabel('$L^2$ error','FontSize',16,"Interpreter","latex");
-legend(["$||u-u_{ex}||_2$","$h_2^{q}$"],'FontSize',16,"Interpreter","latex")
+loglog(hhtt,conv2_val_h,'-or','LineWidth',2);
+% title("$L^2$ norm and convergence error",'FontSize',16,"Interpreter","latex")
+% xlabel('h','FontSize',16,"Interpreter","latex");
+% ylabel('$L^2$ error','FontSize',16,"Interpreter","latex");
+% legend(["$||u-u_{ex}||_2$","$h_2^{q}$"],'FontSize',16,"Interpreter","latex")
+title("L^2 norm and convergence error")
+xlabel('h');
+ylabel('L^2 error');
+legend(["||u-u_{ex}||_2","h_2^{q}"])
+saveas(gcf, ".\plots\L2h_error_conv_mu1_ex4.png");
 
-%saveas(gcf, ".\plots\L2h_error_conv_mu1.png");
-disp("q = "+num2str(2));
-subplot(2,2,2)
-loglog(hhtt1,lInf_errors_h,"o-");
+disp("q2 = "+num2str(ph2));
+
+figure()
+%subplot(2,2,2)
+loglog(hhtt1,lInf_errors_h,'-+b','LineWidth',2);
 hold on 
-loglog(hhtt,convInf_val_h,"o-");
-title("$L^{\infty}$ norm and convergence error",'FontSize',16,"Interpreter","latex")
-xlabel('h','FontSize',16,"Interpreter","latex");
-ylabel('$L^{\infty}$ error','FontSize',16,"Interpreter","latex");
-legend(["$||u-u_{ex}||_{\infty}$","$h_{\infty}^{q}$"],'FontSize',16,"Interpreter","latex")
+loglog(hhtt,convInf_val_h,'-or','LineWidth',2);
+% title("$L^{\infty}$ norm and convergence error",'FontSize',16,"Interpreter","latex")
+% xlabel('h','FontSize',16,"Interpreter","latex");
+% ylabel('$L^{\infty}$ error','FontSize',16,"Interpreter","latex");
+% legend(["$||u-u_{ex}||_{\infty}$","$h_{\infty}^{q}$"],'FontSize',16,"Interpreter","latex")
+title("L^{\infty} norm and convergence error")
+xlabel('h');
+ylabel('L^{\infty} error');
+legend(["||u-u_{ex}||_{\infty}","h_{\infty}^{q}"])
+saveas(gcf, ".\plots\LINFh_error_conv_mu1_ex4.png");
 %saveas(gcf, ".\plots\LINFh_error_conv_mu1.png");
-disp("q = "+num2str(2));
+disp("qINF = "+num2str(phINF));
 
-subplot(2,2,3)
-loglog(hhtt1,l2_errors_t,"o-");
+figure()
+%subplot(2,2,3)
+loglog(hhtt1,l2_errors_t,'-+b','LineWidth',2);
 hold on 
-loglog(hhtt,conv2_val_t,"o-");
-title("$L^2$ norm and convergence error",'FontSize',16,"Interpreter","latex")
-xlabel('$\Delta t$','FontSize',16,"Interpreter","latex");
-ylabel('$L^2$ error','FontSize',16,"Interpreter","latex");
-legend(["$||u-u_{ex}||_2$","$\Delta t_2^{p}$"],'FontSize',16,"Interpreter","latex")
+loglog(hhtt,conv2_val_t,'-or','LineWidth',2);
+% title("$L^2$ norm and convergence error",'FontSize',16,"Interpreter","latex")
+% xlabel('$\Delta t$','FontSize',16,"Interpreter","latex");
+% ylabel('$L^2$ error','FontSize',16,"Interpreter","latex");
+% legend(["$||u-u_{ex}||_2$","$\Delta t_2^{p}$"],'FontSize',16,"Interpreter","latex")
+title("L^2 norm and convergence error")
+xlabel('\Delta t');
+ylabel('L^2 error');
+legend(["||u-u_{ex}||_2","\Delta t_2^{p}"])
+saveas(gcf, ".\plots\L2t_error_conv_mu1_ex4.png");
 %saveas(gcf, ".\plots\L2h_error_conv_mu1.png");
-disp("q = "+num2str(2));
+disp("p2 = "+num2str(pt2));
 
-subplot(2,2,4)
-loglog(hhtt1,lInf_errors_t,"o-");
+%subplot(2,2,4)
+figure()
+loglog(hhtt1,lInf_errors_t,'-+b','LineWidth',2);
 hold on 
-loglog(hhtt,convInf_val_t,"o-");
-title("$L^{\infty}$ norm and convergence error",'FontSize',16,"Interpreter","latex")
-xlabel('$\Delta t$','FontSize',16,"Interpreter","latex");
-ylabel('$L^{\infty}$ error','FontSize',16,"Interpreter","latex");
-legend(["$||u-u_{ex}||_{\infty}$","$\Delta t_{\infty}^{p}$"],'FontSize',16,"Interpreter","latex")
-saveas(gcf, ".\plots\_error_conv_mu1_EX4.png");
-disp("q = "+num2str(2));
+loglog(hhtt,convInf_val_t,'-or','LineWidth',2);
+% title("$L^{\infty}$ norm and convergence error",'FontSize',16,"Interpreter","latex")
+% xlabel('$\Delta t$','FontSize',16,"Interpreter","latex");
+% ylabel('$L^{\infty}$ error','FontSize',16,"Interpreter","latex");
+% legend(["$||u-u_{ex}||_{\infty}$","$\Delta t_{\infty}^{p}$"],'FontSize',16,"Interpreter","latex")
+title("L^{\infty} norm and convergence error")
+xlabel('\Delta t');
+ylabel('L^{\infty} error');
+legend(["||u-u_{ex}||_{\infty}","\Delta t_{\infty}^{p}"])
+saveas(gcf, ".\plots\LINFt_error_conv_mu1_ex4.png");
+%saveas(gcf, ".\plots\_error_conv_mu1_EX4.png");
+disp("pINF = "+num2str(ptINF));
 %%
 mu = 0.1
 
@@ -449,10 +504,10 @@ hold on
 plot(space,amp3,'LineWidth',2);
 hold on
 plot(spaceEx,ampEx3,"--",'LineWidth',2);
-title("Numerical to exact solution comparison",'FontSize',16,"Interpreter","latex")
-xlabel('space x ','FontSize',16,"Interpreter","latex");
-ylabel('$u(x)$','FontSize',16,"Interpreter","latex");
-legend(["$T=0.1$","$T=0.1$ exact","$T=0.5$","$T=0.5$ exact","$T=2.3$","$T=2.3$ exact"],'FontSize',16,"Interpreter","latex")
+title("Numerical to exact solution comparison")
+xlabel('space x ');
+ylabel('u(x)');
+legend(["T=0.1","T=0.1 exact","T=0.5","T=0.5 exact","T=2.3","T=2.3 exact"])
 saveas(gcf, ".\plots\amp_mu01_EX4.png");
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -548,49 +603,74 @@ end
 
 hhtt= 0.0005*(2.^(0:3));
 hhtt1= 0.0005*(2.^(1:3));
-figure('Renderer', 'painters', 'Position', [100 100 1000 600]);
-
-subplot(2,2,1)
-loglog(hhtt1,l2_errors_h,"o-");
+%figure('Renderer', 'painters', 'Position', [100 100 1000 600]);
+figure()
+%subplot(2,2,1)
+loglog(hhtt1,l2_errors_h,'-+b','LineWidth',2);
 hold on 
-loglog(hhtt,conv2_val_h,"o-");
-title("$L^2$ norm and convergence error",'FontSize',16,"Interpreter","latex")
-xlabel('h','FontSize',16,"Interpreter","latex");
-ylabel('$L^2$ error','FontSize',16,"Interpreter","latex");
-legend(["$||u-u_{ex}||_2$","$h_2^{q}$"],'FontSize',16,"Interpreter","latex")
+loglog(hhtt,conv2_val_h,'-or','LineWidth',2);
+% title("L^2 norm and convergence error",'FontSize',16,"Interpreter","latex")
+% xlabel('h','FontSize',16,"Interpreter","latex");
+% ylabel('$L^2$ error','FontSize',16,"Interpreter","latex");
+% legend(["$||u-u_{ex}||_2$","$h_2^{q}$"],'FontSize',16,"Interpreter","latex")
+title("L^2 norm and convergence error")
+xlabel('h');
+ylabel('L^2 error');
+legend(["||u-u_{ex}||_2","h_2^{q}"])
+saveas(gcf, ".\plots\L2h_error_conv_mu01_ex4.png");
 
 %saveas(gcf, ".\plots\L2h_error_conv_mu1.png");
-disp("q = "+num2str(2));
-subplot(2,2,2)
-loglog(hhtt1,lInf_errors_h,"o-");
+disp("q2 = "+num2str(ph2));
+
+%subplot(2,2,2)
+figure()
+loglog(hhtt1,lInf_errors_h,'-+b','LineWidth',2);
 hold on 
-loglog(hhtt,convInf_val_h,"o-");
-title("$L^{\infty}$ norm and convergence error",'FontSize',16,"Interpreter","latex")
-xlabel('h','FontSize',16,"Interpreter","latex");
-ylabel('$L^{\infty}$ error','FontSize',16,"Interpreter","latex");
-legend(["$||u-u_{ex}||_{\infty}$","$h_{\infty}^{q}$"],'FontSize',16,"Interpreter","latex")
+loglog(hhtt,convInf_val_h,'-or','LineWidth',2);
+% title("$L^{\infty}$ norm and convergence error",'FontSize',16,"Interpreter","latex")
+% xlabel('h','FontSize',16,"Interpreter","latex");
+% ylabel('$L^{\infty}$ error','FontSize',16,"Interpreter","latex");
+% legend(["$||u-u_{ex}||_{\infty}$","$h_{\infty}^{q}$"],'FontSize',16,"Interpreter","latex")
+title("L^{\infty} norm and convergence error")
+xlabel('h');
+ylabel('L^{\infty} error');
+legend(["||u-u_{ex}||_{\infty}","h_{\infty}^{q}"])
+saveas(gcf, ".\plots\LINFh_error_conv_mu01_ex4.png");
+
 %saveas(gcf, ".\plots\LINFh_error_conv_mu1.png");
-disp("q = "+num2str(2));
+disp("qINF = "+num2str(phINF));
 
-subplot(2,2,3)
-loglog(hhtt1,l2_errors_t,"o-");
+%subplot(2,2,3)
+figure()
+loglog(hhtt1,l2_errors_t,'-+b','LineWidth',2);
 hold on 
-loglog(hhtt,conv2_val_t,"o-");
-title("$L^2$ norm and convergence error",'FontSize',16,"Interpreter","latex")
-xlabel('$\Delta t$','FontSize',16,"Interpreter","latex");
-ylabel('$L^2$ error','FontSize',16,"Interpreter","latex");
-legend(["$||u-u_{ex}||_2$","$\Delta t_2^{p}$"],'FontSize',16,"Interpreter","latex")
+loglog(hhtt,conv2_val_t,'-or','LineWidth',2);
+% title("L^2 norm and convergence error",'FontSize',16,"Interpreter","latex")
+% xlabel('$\Delta t$','FontSize',16,"Interpreter","latex");
+% ylabel('$L^2$ error','FontSize',16,"Interpreter","latex");
+% legend(["$||u-u_{ex}||_2$","$\Delta t_2^{p}$"],'FontSize',16,"Interpreter","latex")
+title("L^2 norm and convergence error")
+xlabel('\Delta t');
+ylabel('L^2 error');
+legend(["||u-u_{ex}||_2","\Delta t_2^{p}"])
 %saveas(gcf, ".\plots\L2h_error_conv_mu1.png");
-disp("q = "+num2str(2));
+saveas(gcf, ".\plots\L2t_error_conv_mu01_ex4.png");
+disp("p2 = "+num2str(pt2));
 
-subplot(2,2,4)
-loglog(hhtt1,lInf_errors_t,"o-");
+%subplot(2,2,4)
+figure()
+loglog(hhtt1,lInf_errors_t,'-+b','LineWidth',2);
 hold on 
-loglog(hhtt,convInf_val_t,"o-");
-title("$L^{\infty}$ norm and convergence error",'FontSize',16,"Interpreter","latex")
-xlabel('$\Delta t$','FontSize',16,"Interpreter","latex");
-ylabel('$L^{\infty}$ error','FontSize',16,"Interpreter","latex");
-legend(["$||u-u_{ex}||_{\infty}$","$\Delta t_{\infty}^{p}$"],'FontSize',16,"Interpreter","latex")
-saveas(gcf, ".\plots\_error_conv_mu01_EX4.png");
-disp("q = "+num2str(2));
+loglog(hhtt,convInf_val_t,'-or','LineWidth',2);
+% title("$L^{\infty}$ norm and convergence error",'FontSize',16,"Interpreter","latex")
+% xlabel('$\Delta t$','FontSize',16,"Interpreter","latex");
+% ylabel('$L^{\infty}$ error','FontSize',16,"Interpreter","latex");
+% legend(["$||u-u_{ex}||_{\infty}$","$\Delta t_{\infty}^{p}$"],'FontSize',16,"Interpreter","latex")
+title("L^{\infty} norm and convergence error")
+xlabel('\Delta t');
+ylabel('L^{\infty} error');
+legend(["||u-u_{ex}||_{\infty}","\Delta t_{\infty}^{p}"])
+saveas(gcf, ".\plots\LINFt_error_conv_mu01_ex4.png");
+%saveas(gcf, ".\plots\_error_conv_mu01_EX4.png");
+disp("pINF = "+num2str(ptINF));
 
